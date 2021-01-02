@@ -1,3 +1,4 @@
+https://github.com/youssefhoummad/pdf-tools/releases/download/first/pdf-tools.exe
 ## PDF TOOLS
 
 You can use the [editor on GitHub](https://github.com/youssefhoummad/pdf-tools/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
