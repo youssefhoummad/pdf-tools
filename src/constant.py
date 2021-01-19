@@ -25,7 +25,7 @@ BROWSE = 'Browse'
 
 MAIN_DESC = "PDF tools is a collections of tools\nthat will works with pdf files"
 
-SPLIT_TITLE = "Splite file"
+SPLIT_TITLE = "Split file"
 MERGE_TITLE = "Merge files"
 CROP_TITLE = "Crop margins "
 EXTRACT_TITLE = "Extract images"
