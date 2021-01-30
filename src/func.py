@@ -1,13 +1,27 @@
 import os
 import io
+import string
 import tempfile
 
-from PIL import Image
+from PIL import Image, ImageOps
 from PyPDF2 import PdfFileReader, PdfFileWriter, PdfFileMerger
 from PyPDF2.generic import FloatObject
 
 import fitz
+try:
+    from .constant import settings
+except:
+    from constant import settings
 
+def makeSafeFilename(inputFilename):
+    # Set here the valid chars
+    safechars = string.printable
+    try:
+        r = list(filter(lambda c: c in safechars, inputFilename))
+        return r
+    except:
+        return ""
+    pass 
 
 
 
@@ -20,6 +34,7 @@ def get_number_of_pages(path):
 
 
 def split(pdf_file, start_page, end_page):
+
     assert pdf_file != ""
     try:
         start_page, end_page = int(start_page) - 1, int(end_page)-1
@@ -39,9 +54,10 @@ def split(pdf_file, start_page, end_page):
         start_page += 1
     # close it
     new_file.close()
-    return True
+    settings.setsave('last_file', new_name)
+    settings.setsave('last_func', 'split')
 
-
+    
 def merge(pdf_file1, pdf_file2):
     pdf_merger = PdfFileMerger(strict=False)
     pdf_merger.append(pdf_file1)
@@ -50,6 +66,9 @@ def merge(pdf_file1, pdf_file2):
     new_file = rename_file(pdf_file1, '_merged')
     with open(new_file, 'wb') as fileobj:
         pdf_merger.write(fileobj)
+
+    settings.setsave('last_file', new_file)
+    settings.setsave('last_func', 'merge')
 
 
 def crop(pdf_file, top, right, bottom, left):
@@ -81,6 +100,9 @@ def crop(pdf_file, top, right, bottom, left):
         output_pdf.write(new_file)
     
     new_file.close()
+
+    settings.setsave('last_file', new_name)
+    settings.setsave('last_func', 'crop')
 
 
 def extract(pdf_file):
@@ -126,6 +148,8 @@ def extract(pdf_file):
         njpg += 1
         i = iend
 
+    settings.setsave('last_file', path)
+    settings.setsave('last_func', 'extract')
 
 
 def to_images(pdf_file, start_page=None, end_page=None):
@@ -184,6 +208,25 @@ def to_images(pdf_file, start_page=None, end_page=None):
     #     pix.writePNG(output)
     
 
+def to_pdf(*images):
+    listImages = []
+    for path_img in images:
+        image = Image.open(path_img)
+        image = image.convert('RGB')
+        # fix rotation
+        image = ImageOps.exif_transpose(image)
+    
+        listImages.append(image)
+
+    image = listImages[0]
+    listImages.remove(image)
+    listImages[0].save(images[0][:-4]+'.pdf', save_all=True, append_images=listImages)
+
+    new_name = os.path.normpath(images[0][:-4]+'.pdf')
+    
+    settings.setsave('last_file', new_name)
+    settings.setsave('last_func', 'to_pdf')
+
 
 def first_page_to_image(pdf_file, page=0):
   with tempfile.TemporaryDirectory() as path:
@@ -210,8 +253,14 @@ def rename_file(pdf_file, refrain):
     while os.path.isfile(new_name):
         new_name = pdf_file[:-4] + f"{refrain}_{i}.pdf"
         i +=1
-    return new_name
+    # new_name = makeSafeFilename(new_name)
+    # print(new_name)
+    new_name = os.path.realpath(new_name)
+    return  new_name
+
 
 
 if __name__ == "__main__":
-    pass
+    p = r"C:\Users\youssef\Downloads\إشكالية تعريف المصطلح.pdf"
+    d = makeSafeFilename(p)
+    print(d)

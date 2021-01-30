@@ -38,7 +38,6 @@ class Button1(tk.Label):
     self.bind("<ButtonPress-1>", self.on_press)
     self.bind("<ButtonRelease-1>", self.on_release)
 
-    self.on_disable()
 
 
   
@@ -76,7 +75,7 @@ class Button1(tk.Label):
 
 class Button(Button1):
   def __init__(self, parent, text, *args, **kwargs):
-    Button1.__init__(self,
+    super().__init__(
         parent, text=text, 
         image1=r'img\\button1.png', 
         image2=r'img\\button2.png', 
@@ -84,6 +83,7 @@ class Button(Button1):
         image4=r'img\\button4.png',
         *args, **kwargs
         )
+    super().on_disable()
 
 
 
