@@ -342,19 +342,24 @@ class AppGui(tk.Tk):
       self.unable_btn_hide_loading()
 
 
-
-
-      # show system notification 
-      toaster.show_toast(
-        "process completed",
-        f"{callback.__name__}",
-        icon_path=r'img\\icon.ico',
-        callback_on_click= self.open_path,
-        duration=10,
-        threaded=True
-          )
+      self.show_notify()
 
     return function_wrapper
+
+
+  def show_notify(self):
+    # show system notification 
+    msg = settings.get('last_func')
+    path = settings.get('last_file')
+
+    toaster.show_toast(
+      PROCESS_COMPLETE,
+      str(path),
+      icon_path=r'img\\icon.ico',
+      callback_on_click= self.open_path,
+      duration=10,
+      threaded=True
+        )
 
 
   def open_path(self):

@@ -68,6 +68,14 @@ if DIR == 'rtl':
   RIGHT_TXT = 'اليمين'
   LEFT_TXT = 'اليسار'
 
+  PROCESS_COMPLETE = "انتهت العملية"
+
+  # SPLITING_MSG = 'قُسِّم الملف بنجاح.'
+  # MERGING_MSG = 'دُمج الملفين بنجاح.'
+  # CROPING_MSG = 'قُلِّم الملف من الحواف بنجاح.'
+  # EXTRACTING_MSG = 'انتهى استخراج الصور من الملف.'
+  # TOPDF_MSG = 'انتهى تحويل الصور المحددة إلى ملف.'
+
 
 else:
   START_DIR = 'left'
@@ -112,3 +120,11 @@ else:
   BOTTOM_TXT = 'bottom'
   RIGHT_TXT = 'right'
   LEFT_TXT = 'left'
+
+  PROCESS_COMPLETE = "Process Completed"
+
+  # SPLITING_MSG = 'file have been splited successfully.'
+  # MERGING_MSG = 'files have been merged successfully.'
+  # CROPING_MSG = 'file have been croped successfully.'
+  # EXTRACTING_MSG = 'image have been extract successfully from file.'
+  # TOPDF_MSG = 'images have been converted to pdf successfully.'

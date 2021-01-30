@@ -9,9 +9,9 @@ from PyPDF2.generic import FloatObject
 
 import fitz
 try:
-    from .constant import settings
+    from .constant import *
 except:
-    from constant import settings
+    from constant import *
 
 def makeSafeFilename(inputFilename):
     # Set here the valid chars
@@ -55,7 +55,7 @@ def split(pdf_file, start_page, end_page):
     # close it
     new_file.close()
     settings.setsave('last_file', new_name)
-    settings.setsave('last_func', 'split')
+    # settings.setsave('last_func', SPLITING_MSG)
 
     
 def merge(pdf_file1, pdf_file2):
@@ -68,7 +68,7 @@ def merge(pdf_file1, pdf_file2):
         pdf_merger.write(fileobj)
 
     settings.setsave('last_file', new_file)
-    settings.setsave('last_func', 'merge')
+    # settings.setsave('last_func', MERGING_MSG)
 
 
 def crop(pdf_file, top, right, bottom, left):
@@ -102,7 +102,7 @@ def crop(pdf_file, top, right, bottom, left):
     new_file.close()
 
     settings.setsave('last_file', new_name)
-    settings.setsave('last_func', 'crop')
+    # settings.setsave('last_func', CROPING_MSG)
 
 
 def extract(pdf_file):
@@ -149,7 +149,7 @@ def extract(pdf_file):
         i = iend
 
     settings.setsave('last_file', path)
-    settings.setsave('last_func', 'extract')
+    # settings.setsave('last_func', EXTRACTING_MSG)
 
 
 def to_images(pdf_file, start_page=None, end_page=None):
@@ -225,7 +225,7 @@ def to_pdf(*images):
     new_name = os.path.normpath(images[0][:-4]+'.pdf')
     
     settings.setsave('last_file', new_name)
-    settings.setsave('last_func', 'to_pdf')
+    # settings.setsave('last_func', TOPDF_MSG)
 
 
 def first_page_to_image(pdf_file, page=0):
