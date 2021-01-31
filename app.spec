@@ -6,7 +6,7 @@ block_cipher = None
 
 
 
-a = Analysis(['app.py'],
+a = Analysis(['main.py'],
              pathex=['D:\\برمجة\\pdf'],
              binaries=[],
              datas=collect_data_files('img'),
@@ -24,7 +24,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name='app',
+          name='PDF-tools',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -39,4 +39,4 @@ coll = COLLECT(exe,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='app')
+               name='PDF-tools')

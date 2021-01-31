@@ -9,7 +9,7 @@ class CardFrame(tk.Frame):
     self.configure(bg=self.bg)
 
     tk.Label(self, bg=self.bg, text=title, justify=START_DIR,  anchor=NW,font=(FONT,22,"bold")).pack(padx=START_PADDING_24,fill="both", pady=START_PADDING_24_0)
-    tk.Label(self, bg=self.bg, text=content,  fg='gray', anchor=NW,justify=START_DIR, font=(FONT_1,10,"normal")).pack(fill='both', padx=START_PADDING_24)
+    tk.Label(self, bg=self.bg, text=content,  fg='gray', anchor=NW,justify=START_DIR, font=FONT_SM).pack(fill='both', padx=START_PADDING_24)
 
 
 if __name__ == "__main__":

@@ -46,12 +46,22 @@ class NumEntry(ttk.Entry):
     self.insert(tk.END, value)   
     
 
+class EntryWithPlusMinus(tk.Frame):
+  def __init__(self, master):
+    super().__init__(master)
 
+    self.plus = tk.Button(self, text='+')
+    self.entry =tk.Entry(self, width=6)
+    self.minus = tk.Button(self, text='-')
+
+    self.plus.pack(side='left')
+    self.entry.pack(side='left')
+    self.minus.pack(side='left')
 
 if __name__ == "__main__":
   root = tk.Tk()
   text = tk.StringVar()
-  entry1 = NumEntry(root, textvariable=text, placeholder="top")
+  entry1 = EntryWithPlusMinus(root)
   entry1.pack(padx=20, pady=20)
 
 

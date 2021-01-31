@@ -152,9 +152,9 @@ def extract(pdf_file):
     # settings.setsave('last_func', EXTRACTING_MSG)
 
 
-def to_images(pdf_file, start_page=None, end_page=None):
+def to_images(doc, pdf_file, start_page=None, end_page=None):
     # https://stackoverflow.com/a/55480474
-    doc = fitz.open(pdf_file)
+    # doc = fitz.open(pdf_file)
     pages = doc.pageCount
 
     path = '/'.join(pdf_file.split('/')[:-1])+'/pdf_to_images/'
@@ -163,53 +163,29 @@ def to_images(pdf_file, start_page=None, end_page=None):
     except:
         path = '/'.join(pdf_file.split('/')[:-1])+'/'
     
+    zoom_x = 2.0  # horizontal zoom
+    zomm_y = 2.0  # vertical zoom
+    mat = fitz.Matrix(zoom_x, zomm_y)  # zoom factor 2 in each dimension
+    
     if pages == 1:
         p = doc.loadPage(0)
-        pix = p.getPixmap()
+        pix = p.getPixmap(matrix = mat)
         output = f"{path}outfile.png"
         pix.writePNG(output)
         return
+
+    for page in range(0,pages-1):
+        p = doc.loadPage(page) 
+        pix = p.getPixmap(matrix = mat)
+        output = f"{path}outfile_{page}.png"
+        pix.writePNG(output)
     
-    
-    def render_page(vector):
-        idx = vector[0]  # this is the segment number we have to process
-        cpu = vector[1]  # number of CPUs
-        filename = vector[2]  # document filename
-        # mat = vector[3]  # the matrix for rendering
-        doc = fitz.open(filename)  # open the document
-        num_pages = len(doc)  # get number of pages
+    settings.setsave('last_file', path)
 
-        # pages per segment: make sure that cpu * seg_size >= num_pages!
-        seg_size = int(num_pages / cpu + 1)
-        seg_from = idx * seg_size  # our first page number
-        seg_to = min(seg_from + seg_size, num_pages)  # last page number
-
-        for i in range(seg_from, seg_to):  # work through our page segment
-            page = doc[i]
-            # page.getText("rawdict")  # use any page-related type of work here, eg
-            pix = page.getPixmap(alpha=False)
-            # store away the result somewhere ...
-            # pix.writePNG("p-%i.png" % i)
-            output = f"{path}outfile_{i}.png"
-            pix.writePNG(output)
-
-    cpu = cpu_count()
-
-    # make vectors of arguments for the processes
-    vectors = [(i, cpu, pdf_file) for i in range(cpu)]
-
-    pool = Pool()  # make pool of 'cpu_count()' processes
-    pool.map(render_page, vectors, 1)
-
-    # for p in range(0,pages-1):
-    #     p = doc.loadPage(page) 
-    #     pix = p.getPixmap()
-    #     output = f"{path}outfile_{page}.png"
-    #     pix.writePNG(output)
-    
 
 def to_pdf(*images):
     listImages = []
+
     for path_img in images:
         image = Image.open(path_img)
         image = image.convert('RGB')
@@ -218,23 +194,21 @@ def to_pdf(*images):
     
         listImages.append(image)
 
-    image = listImages[0]
-    listImages.remove(image)
-    listImages[0].save(images[0][:-4]+'.pdf', save_all=True, append_images=listImages)
-
     new_name = os.path.normpath(images[0][:-4]+'.pdf')
+
+    listImages[0].save(new_name, save_all=True, append_images=listImages[1:])
+
     
     settings.setsave('last_file', new_name)
     # settings.setsave('last_func', TOPDF_MSG)
 
 
-def first_page_to_image(pdf_file, page=0):
-  with tempfile.TemporaryDirectory() as path:
-    doc = fitz.open(pdf_file)
+def page_to_image(doc, page=0):
+
     p = doc.loadPage(page) 
     pix = p.getPixmap()
     img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-  return img
+    return img
 
 
 def remove_text_watermark(wm_text, inputFile, outputFile):
@@ -261,6 +235,8 @@ def rename_file(pdf_file, refrain):
 
 
 if __name__ == "__main__":
-    p = r"C:\Users\youssef\Downloads\إشكالية تعريف المصطلح.pdf"
-    d = makeSafeFilename(p)
-    print(d)
+    p = r"C:\Users\youssef\AppData\Local\Packages\38833FF26BA1D.UnigramPreview_g9c9v27vpyspw\LocalState\0\documents\مقدمات مكثف (4).pdf"
+    # o = r"C:\\Users\\youssef\\Downloads\\3.txt"
+    # d = fitz.open(p)
+    to_txt(p)
+    

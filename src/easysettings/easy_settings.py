@@ -677,7 +677,7 @@ class EasySettings(object):
         header = self._parse_header()
 
         try:
-            with open(sfile, 'w') as fwrite:
+            with open(sfile, 'w', encoding='utf-8') as fwrite:
                 fwrite.write('{}\n'.format(msg))
                 if header:
                     fwrite.write('{}\n'.format(header))

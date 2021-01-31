@@ -1,6 +1,8 @@
 import locale
-from .easysettings import EasySettings
-
+try:
+  from .easysettings import EasySettings
+except:
+  from easysettings import EasySettings
 
 
 P_COLOR = "#1481CE"
@@ -8,9 +10,9 @@ S_COLOR = "#F67E6A"
 STOP = False
 CANVAS_W = 147
 CANVAS_H = 200
-FONT = "Segoe UI Semibold"
-FONT_1 =  "Tahoma"
-FONT_2 =  "Tahoma"
+FONT = "Calibre"
+FONT_SM =  ('Tahoma',9,'normal')
+FONT_MD =  ("Tahoma", 9, 'bold')
 
 
 SIDBAR_BG = "#F2F2F2"
@@ -69,6 +71,7 @@ if DIR == 'rtl':
   LEFT_TXT = 'اليسار'
 
   PROCESS_COMPLETE = "انتهت العملية"
+  EACH_PAGE_TEXT = "تحويل كل صفحة إلى صورة منفردة"
 
   # SPLITING_MSG = 'قُسِّم الملف بنجاح.'
   # MERGING_MSG = 'دُمج الملفين بنجاح.'
@@ -122,6 +125,9 @@ else:
   LEFT_TXT = 'left'
 
   PROCESS_COMPLETE = "Process Completed"
+
+  EACH_PAGE_TEXT = "Convert each page to single image"
+
 
   # SPLITING_MSG = 'file have been splited successfully.'
   # MERGING_MSG = 'files have been merged successfully.'
