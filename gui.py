@@ -12,6 +12,7 @@ from src.constant import *
 from src.itemSidebare import ItemSidebare
 from src.cardFrame import CardFrame
 from src.button import Button, ButtonSmall
+from src.toggleSwitch import Switch
 from src.imageLabel import ImageLabel
 from src.browseForm import BrowseForm, BrowseForm2
 from src.linkLabel import LinkLabel
@@ -69,8 +70,6 @@ class AppGui(tk.Frame):
 
     self.init_gui()
 
-    # self.pack(fill='both', expand=True)
-
 
   def processIncoming(self):
     """ Handle all messages currently in the queue, if any. """
@@ -89,9 +88,9 @@ class AppGui(tk.Frame):
 
   def init_gui(self):
 
-    self.sidebar = tk.Frame(self, width=200, height=500, relief='flat', borderwidth=1)
+    self.sidebar = tk.Frame(self, width=200, height=500, bd=0)
     self.sidebar.pack(side=START_DIR, fill='both')
-    self.sidebar.pack_propagate(0)
+    self.sidebar.pack_propagate(0) # fix width
     # main content area
     self.mainarea = tk.Frame(self, bg='white', width=550, height=500, bd=0)
     self.mainarea.pack(expand=True, fill='both', side=START_DIR)
@@ -113,18 +112,28 @@ class AppGui(tk.Frame):
 
 
   def init_sidebar(self):
+    self.btns_sidebar = []
+
     menu = [
       {'title':SPLIT_TITLE,'icon':r'img\cut.png', 'index':0},
       {'title':MERGE_TITLE,'icon':r'img\merge.png', 'index':1 },
       {'title':CROP_TITLE,'icon':r'img\crop.png', 'index':2 },
       {'title':EXTRACT_TITLE,'icon':r'img\image.png', 'index':3 },
       {'title':IMAGES_TITLE,'icon':r'img\images.png', 'index':4 },
+      {'title':ABOUT_TITLE, 'icon':r'img\\info.png', 'index':5}
       ]
+    # show top <PDF-Tools>
     CardFrame(self.sidebar, 'PDF tools', MAIN_DESC).pack()
+
+    # add buttons sidebar to list <btns_sidebar>
     for item in menu:
-      ItemSidebare(self.sidebar, item['title'], icon=item['icon'], command=lambda x=item['index']:self.show_current_sceen(x)).pack(fill='x')
+      self.btns_sidebar.append(
+        ItemSidebare(self.sidebar, item['title'], icon=item['icon'], command=lambda x=item['index']:self.show_current_sceen(x)))
     
-    ItemSidebare(self.sidebar, ABOUT_TITLE, icon=r'img\\info.png', command=lambda x=5:self.show_current_sceen(x)).pack(side='bottom', fill='x')
+    # show bouttons sidebar
+    for btn in self.btns_sidebar[:-1]: btn.pack(fill='x')
+    # show last boutton sidebar at bottom
+    self.btns_sidebar[-1].pack(side='bottom', fill='x')
   
 
   ## init sceens
@@ -213,11 +222,9 @@ class AppGui(tk.Frame):
     CardFrame(_f, EXTRACT_TITLE, EXTRACT_DESC).pack(fill='both', pady=(0, 10))
 
     BrowseForm(_f, self.file_path).pack(padx=START_PADDING_24, anchor=NW, fill='x', expand=True)
-    ttk.Style().configure('TCheckbutton', background='white')
 
     _c = tk.Frame(_f, bg=_f['bg'])
-    ttk.Checkbutton(_c, variable=self.to_single_pages).pack(side=START_DIR)
-    tk.Label(_c, text=EACH_PAGE_TEXT, bg=_c['bg'], justify=START_DIR).pack(side=START_DIR)
+    Switch(_c, text=EACH_PAGE_TEXT, variable=self.to_single_pages, bg=_f['bg']).pack(side=START_DIR, anchor=NW, fill='x', expand=True)
     _c.pack(padx=START_PADDING_24, anchor=NW, fill='x', expand=True, pady=20)
     
     Button(_f, text=EXTRACT_BTN, command=self.extract).pack(side=START_DIR,padx=START_PADDING_24, pady=(30,0), anchor=NW)
@@ -259,11 +266,18 @@ class AppGui(tk.Frame):
 
 
   def show_current_sceen(self, index):
-    for screen in self.screens: screen.pack_forget()
 
+    # hide others screens
+    for screen in self.screens: screen.pack_forget()
+    # show this screen
     self.current_screen = self.screens[index]
     self.current_screen.pack(fill='both')
-  
+
+    # hide accent color from others buttons sidebar
+    for btn in self.btns_sidebar: btn.on_disactive()
+    # show accent color to Clicked button sidebar
+    self.btns_sidebar[index].on_active()
+
 
   def show_thumbnail(self, page=1):
 
