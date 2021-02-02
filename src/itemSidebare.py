@@ -1,38 +1,36 @@
-import tkinter as tk
-from tkinter import ttk
+from tkinter import Frame, Label
 from .imageLabel import ImageLabel
 from .constant import *
 
 
 
-class ItemSidebare(tk.Frame):
+class ItemSidebare(Frame):
   def __init__(self, parent, text, icon=None, command=None):
-    ttk.Frame.__init__(self, parent)
+    super().__init__(parent)
+
+    self.active = False
+
     self.text = text
     self.command= command
 
-    self.s = ttk.Style() 
 
-  
-    self.s.configure('Basic.TFrame', background='#F2F2F2')
-    self.s.configure('Hover.TFrame', background='#DEDEDE')
-    self.s.configure('Press.TFrame', background='#CFCFCF')
-    self.s.configure('Basic.TLabel', background='#F2F2F2')
-    self.s.configure('Hover.TLabel', background='#DEDEDE')
-    self.s.configure('Press.TLabel', background='#CFCFCF')
-    self.s.configure('TButton', background='white')
+    self._bg = '#F2F2F2'
+    self._bgHover = '#DEDEDE'
+    self._bgPress = '#CFCFCF'
 
-    self.config(style="Basic.TFrame")
+    self.config(bg=self._bg)
+
+    self.border = Frame(self, bg=self._bg, width=4, height=24)
 
     if icon:
-      self.imageLabel = ImageLabel(self, image_path=icon, style="Basic.TLabel", width=28, height=28)
-    else:
-      self.imageLabel = ttk.Label(self, style="Basic.TLabel")
+      self.imageLabel = ImageLabel(self, image_path=icon, bg=self._bg,  width=28, height=28)
 
-    self.textLabel = ttk.Label(self, text=text, style='Basic.TLabel', font=('Calibri',12,"bold"))
+    self.textLabel = Label(self, text=text, bg=self._bg, font=('Calibri',12,"bold"))
     
-    self.imageLabel.pack(sid=START_DIR, pady=8, padx=START_PADDING_24)
-    self.textLabel.pack(sid=START_DIR, padx=END_PADDING_10)
+    self.border.pack(side=START_DIR)
+    if icon:
+      self.imageLabel.pack(side=START_DIR, pady=8, padx=START_PADDING_24)
+    self.textLabel.pack(side=START_DIR, padx=END_PADDING_10)
 
     if not icon: 
       self.imageLabel.pack(padx=0)
@@ -55,29 +53,35 @@ class ItemSidebare(tk.Frame):
     self.imageLabel.bind("<Leave>", self.on_leave)
   
   def on_hover(self, e):
-    self.config(style="Hover.TFrame")
-    self.textLabel.config(style="Hover.TLabel")
-    self.imageLabel.config(style="Hover.TLabel")
+    self.config(bg=self._bgHover)
+    self.textLabel.config(bg=self._bgHover)
+    self.imageLabel.config(bg=self._bgHover)
+    if not self.active:
+      self.border.config(bg=self._bgHover)
   
   def on_press(self, e):
-    self.config(style="Press.TFrame")
-    self.textLabel.config(style="Press.TLabel")
-    self.imageLabel.config(style="Press.TLabel")
+    self.config(bg=self._bgPress)
+    self.textLabel.config(bg=self._bgPress)
+    self.imageLabel.config(bg=self._bgPress)
+    if not self.active:
+      self.border.config(bg=self._bgPress)
 
   def on_leave(self, e):
-    self.config(style="Basic.TFrame")
-    self.textLabel.config(style="Basic.TLabel")
-    self.imageLabel.config(style="Basic.TLabel")
+    self.config(bg=self._bg)
+    self.textLabel.config(bg=self._bg)
+    self.imageLabel.config(bg=self._bg)
+    if not self.active:
+      self.border.config(bg=self._bg)
 
   def on_release(self, e):
     self.on_hover(e=None)
     self.command()
 
+  def on_active(self):
+    self.active = True
+    self.border.config(bg='#FF9F43')
 
-# if __name__ == "__main__":
-#     root = tk.Tk()
-#     f = SideFrame(root, "Color Picker", icon=r'3.png')
-#     f.pack(fill='both', expand='True')
-#     e = SideFrame(root, "text", icon=r'2.png')
-#     e.pack(fill='both', expand='True')
-#     root.mainloop()
+  def on_disactive(self):
+    self.active = False
+    self.border.config(bg=self._bg)
+

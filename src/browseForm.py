@@ -11,6 +11,8 @@ class BrowseForm(tk.Frame):
   def __init__(self, parent, textvariable, *args, **kwargs):
     tk.Frame.__init__(self, parent, *args, **kwargs)
     self.config( bg=parent['background'])
+    self.s = ttk.Style() 
+    self.s.configure('TButton', background=parent['background'])
 
     self.textvariable = textvariable
 

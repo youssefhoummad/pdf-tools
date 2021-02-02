@@ -1,42 +1,36 @@
-import tkinter as tk
-
+import io
+import base64
+from tkinter import Label
 
 from PIL import Image, ImageTk
-from .constant import FONT_MD
 
-class Button1(tk.Label):
-  def __init__(self, parent, text, images=[], command=None, size=(150, 70)):
-    tk.Label.__init__(self, parent, text=text)
+IMG_BASE = 'iVBORw0KGgoAAAANSUhEUgAAAJgAAAAkCAMAAABCFAMdAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAnUExURQAAABSAzxSAzRWAzhOAzhWAzhSCzxSCzhSBzhSBzhSBzhSBzhSBzrYPMWAAAAAMdFJOUwBATFSDk7O7y+vv94T4noEAAAAJcEhZcwAAFxEAABcRAcom8z8AAAB1SURBVFhH7dgxDoAgFIPhgvoE8f7nVZN6gG4d+k1l+0OYANBq3lZm9TcLO49W9ve+OM00FJeZgtn7+k1w2EmYKmGqhKkSpkqYKmGqhKkSpkqYKmGqhKkSpvINuzjMTJxcZgqdy0wHDk4rx/eluI3Fo4k1NuABG3X/RC8BNvMAAAAASUVORK5CYII='
+IMG_HOVER = 'iVBORw0KGgoAAAANSUhEUgAAAJgAAAAkCAMAAABCFAMdAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAnUExURQAAADi37za58je28De38Ti28Ti28Te38Te38Te38Te48Te38Te38WhZQuQAAAAMdFJOUwBATFSDk7O7y+vv94T4noEAAAAJcEhZcwAAFxEAABcRAcom8z8AAAB1SURBVFhH7dgxDoAgFIPhgvoE8f7nVZN6gG4d+k1l+0OYANBq3lZm9TcLO49W9ve+OM00FJeZgtn7+k1w2EmYKmGqhKkSpkqYKmGqhKkSpkqYKmGqhKkSpvINuzjMTJxcZgqdy0wHDk4rx/eluI3Fo4k1NuABG3X/RC8BNvMAAAAASUVORK5CYII='
+IMG_PRESS = 'iVBORw0KGgoAAAANSUhEUgAAAJgAAAAkCAMAAABCFAMdAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAnUExURQAAABRYmxRXmhVYmxNYnBVYmhRYmxRZmxRYmxRYmxRXmxRYmxRYm+GSz3IAAAAMdFJOUwBATFSDk7O7y+vv94T4noEAAAAJcEhZcwAAFxEAABcRAcom8z8AAAB1SURBVFhH7dgxDoAgFIPhgvoE8f7nVZN6gG4d+k1l+0OYANBq3lZm9TcLO49W9ve+OM00FJeZgtn7+k1w2EmYKmGqhKkSpkqYKmGqhKkSpkqYKmGqhKkSpvINuzjMTJxcZgqdy0wHDk4rx/eluI3Fo4k1NuABG3X/RC8BNvMAAAAASUVORK5CYII='
+IMG_DISB = 'iVBORw0KGgoAAAANSUhEUgAAAJgAAAAkCAMAAABCFAMdAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAnUExURQAAAJuzx56yxp6zyJ6zx56zx52zx52zx52yxp2zx52zyJ2zx52zx5Mkjn4AAAAMdFJOUwBATFSDk7O7y+vv94T4noEAAAAJcEhZcwAAFxEAABcRAcom8z8AAAB1SURBVFhH7dgxDoAgFIPhgvoE8f7nVZN6gG4d+k1l+0OYANBq3lZm9TcLO49W9ve+OM00FJeZgtn7+k1w2EmYKmGqhKkSpkqYKmGqhKkSpkqYKmGqhKkSpvINuzjMTJxcZgqdy0wHDk4rx/eluI3Fo4k1NuABG3X/RC8BNvMAAAAASUVORK5CYII='
 
-    self.size = size
+
+class ButtonBase(Label):
+  def __init__(self, parent, text, images=[], command=None):
+    super().__init__(parent, text=text)
 
     self.command= command
 
     self.disabeld = False
 
-    while len(images) < 4:
-      images.append(images[0])
+    self._fg = 'white'
+    self._fgDis = '#F2F2F2'
+
+    self.images = []
+
+    for img in images: self.images.append(self._render_img(img))
     
-    self._img = Image.open(images[0])
-    self._img.thumbnail(self.size, Image.ANTIALIAS)
-    self._img = ImageTk.PhotoImage(self._img)
+    while len(self.images) < 4:
+      self.images.append(self.images[0])
 
-    self._imgHover = Image.open(images[1])
-    self._imgHover.thumbnail(self.size, Image.ANTIALIAS)
-    self._imgHover = ImageTk.PhotoImage(self._imgHover)
+    self.config(image=self.images[0])
 
-    self._imgPress = Image.open(images[2])
-    self._imgPress.thumbnail(self.size, Image.ANTIALIAS)
-    self._imgPress = ImageTk.PhotoImage(self._imgPress)
-
-    self._imgDisable = Image.open(images[3])
-    self._imgDisable.thumbnail(self.size, Image.ANTIALIAS)
-    self._imgDisable = ImageTk.PhotoImage(self._imgDisable)
-
-
-    self.config(image=self._img)
-
-    self.config(compound="center", bd=0, fg='white', bg=parent['background'], activeforeground='white',font=FONT_MD)
+    self.config(compound="center", bd=0, fg='white', bg=parent['background'], activeforeground='white', font=('Tahoma',10,'bold'))
     self.config(fg="white")
 
     self.bind("<Enter>", self.on_enter)
@@ -45,20 +39,24 @@ class Button1(tk.Label):
     self.bind("<ButtonRelease-1>", self.on_release)
 
 
+  def _render_img(self, img):
+    imgdata = base64.b64decode(img)
+    img = Image.open(io.BytesIO(imgdata))
+    return ImageTk.PhotoImage(img)
 
-  
+
   def on_enter(self, event):
     if not self.disabeld:
-      self.config(image=self._imgHover)
+      self.config(image=self.images[1])
     
 
   def on_leave(self, event):
     if not self.disabeld:
-      self.config(image=self._img)
+      self.config(image=self.images[0])
 
   def on_press(self, event):
     if not self.disabeld:
-      self.config(image=self._imgPress)
+      self.config(image=self.images[2])
 
   def on_release(self, event):
     # if self['state']!="disabled":
@@ -68,44 +66,39 @@ class Button1(tk.Label):
     
   def on_disable(self, event=None):
     self.disabeld = True
-    self.config(image=self._imgDisable, fg='gray')
+    self.config(image=self.images[3], fg=self._fgDis)
 
   def on_unable(self, event=None):
     self.disabeld = False
-    self.config(image=self._img, fg='white')
+    self.config(image=self.images[0], fg=self._fg)
 
 
-class Button(Button1):
+class Button(ButtonBase):
   def __init__(self, parent, text, command=None):
     super().__init__(
-        parent, text=text, images=[
-          r'img\\button1.png', 
-          r'img\\button2.png', 
-          r'img\\button3.png',
-          r'img\\button4.png',
-          ], command=command
+        parent, text=text, images=[IMG_BASE, IMG_HOVER, IMG_PRESS, IMG_DISB], command=command
         )
     super().on_disable()
 
 
-class ButtonSmall(Button1):
+IMG_SM = 'iVBORw0KGgoAAAANSUhEUgAAABMAAAASCAMAAACO0hVbAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAPUExURf+AQP+gQv+fQv+gQ/+fQ+Yl0yMAAAAEdFJOUwSDh+OSQ+laAAAACXBIWXMAABcRAAAXEQHKJvM/AAAAMUlEQVQoU2NgYGRmQQbMTEAhKBsBGBlQVYEAMwOUgQyGtRi2MGCCshAAFIBoYcrEAACjSQUtaqPaYAAAAABJRU5ErkJggg=='
+IMG_SM2 = 'iVBORw0KGgoAAAANSUhEUgAAABMAAAASCAMAAACO0hVbAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAPUExURf+/gP+9ef+9ef+8ef+8eaDlP8gAAAAEdFJOUwSDh+OSQ+laAAAACXBIWXMAABcRAAAXEQHKJvM/AAAAMUlEQVQoU2NgYGRmQQbMTEAhKBsBGBlQVYEAMwOUgQyGtRi2MGCCshAAFIBoYcrEAACjSQUtaqPaYAAAAABJRU5ErkJggg=='
+IMG_SM3 = 'iVBORw0KGgoAAAANSUhEUgAAABMAAAASCAMAAACO0hVbAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAPUExURf+AAP+OHf+OHP+OHf+OHY6PLtQAAAAEdFJOUwSDh+OSQ+laAAAACXBIWXMAABcRAAAXEQHKJvM/AAAAMUlEQVQoU2NgYGRmQQbMTEAhKBsBGBlQVYEAMwOUgQyGtRi2MGCCshAAFIBoYcrEAACjSQUtaqPaYAAAAABJRU5ErkJggg=='
+IMG_SM4 = 'iVBORw0KGgoAAAANSUhEUgAAABMAAAASCAMAAACO0hVbAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAADUExURQAAAKd6PdoAAAABdFJOUwBA5thmAAAACXBIWXMAABcRAAAXEQHKJvM/AAAADklEQVQoU2MYBXQADAwAAWgAAfzXmx8AAAAASUVORK5CYII='
+
+
+class ButtonSmall(ButtonBase):
   def __init__(self, parent, text, command=None):
     super().__init__(
-        parent, text=text, images=[
-          r'img\\btnBase.tif', 
-          r'img\\btnHover.tif', 
-          r'img\\btnPress.tif',
-          r'img\\btnDisable.tif'
-          ], command=command, size=(30,30)
+        parent, text=text, images=[IMG_SM, IMG_SM2, IMG_SM3, IMG_SM4], command=command
         )
+    self._fgDis = 'white'
     super().on_disable()
 
 
 
 if __name__ == "__main__":
   root = tk.Tk()
-  b = Button(root, text='click me')
-  b.config(state='disabled')
-
+  b = ButtonBase(root, text='click me', images=[IMG_BASE, IMG_HOVER, IMG_PRESS])
   b.pack(padx=20, pady=20)
   root.mainloop()
