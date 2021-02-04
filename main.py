@@ -52,7 +52,6 @@ class ThreadedApp(object):
   def init_doc(self):
     return fitz.open(self.gui.file_path.get())
 
-
   @threaded
   def split(self):
 
