@@ -21,4 +21,5 @@
 
 ### Download
 https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.2/Pdf-tools-installer.exe
+
 https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.2/PDF-tools.zip
