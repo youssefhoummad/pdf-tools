@@ -4,7 +4,7 @@
 ### Whats new in v2.2.1
 - Add possibilty to preview all pages in croping.
 - Convert pdf to images page by page.
-- Fix some bugs.
+- Fixed bugs.
 
 ### Whats new in PDF-Tools v2.1.0
 - Support **arabic**: You can choose arabic from about pan.
@@ -20,5 +20,5 @@
 - Convert multi-images to one file.
 
 ### Download
-https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.1/Pdf-tools-installer.exe
-https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.1/PDF-tools-v2.2.1.zip
+https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.2/Pdf-tools-installer.exe
+https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.2/PDF-tools.zip
