@@ -11,8 +11,8 @@ STOP = False
 CANVAS_W = 147
 CANVAS_H = 200
 FONT = "Calibre"
-FONT_SM =  ('Tahoma',9,'normal')
-FONT_MD =  ("Tahoma", 9, 'bold')
+FONT_SM =  ('Segoe UI',9,'normal')
+FONT_MD =  ("Calibre", 9, 'normal')
 
 
 SIDBAR_BG = "#F2F2F2"
@@ -63,22 +63,17 @@ if DIR == 'rtl':
   EXTRACT_BTN = 'استخراج الصور'
   CONVERT_BTN = 'تحويل الصور لملف'
 
-  FROM_TXT = 'من'
-  TO_TXT = 'إلى'
+  FROM_TXT = ': من الصفحة رقم'
+  TO_TXT = ': إلى الصفحة رقم'
   TOP_TXT = 'الأعلى'
   BOTTOM_TXT = 'الاسفل'
   RIGHT_TXT = 'اليمين'
   LEFT_TXT = 'اليسار'
 
+  PREVIEW_TEXT = 'معاينة'
+
   PROCESS_COMPLETE = "انتهت العملية"
   EACH_PAGE_TEXT = "تحويل كل صفحة إلى صورة منفردة"
-
-  # SPLITING_MSG = 'قُسِّم الملف بنجاح.'
-  # MERGING_MSG = 'دُمج الملفين بنجاح.'
-  # CROPING_MSG = 'قُلِّم الملف من الحواف بنجاح.'
-  # EXTRACTING_MSG = 'انتهى استخراج الصور من الملف.'
-  # TOPDF_MSG = 'انتهى تحويل الصور المحددة إلى ملف.'
-
 
 else:
   START_DIR = 'left'
@@ -91,7 +86,7 @@ else:
 
   BROWSE = 'Browse'
 
-  MAIN_DESC = "PDF tools is a collections of tools\nthat will works with pdf files"
+  MAIN_DESC = "PDF tools is a collections \nthat will works with pdf files"
 
   SPLIT_TITLE = "Split file"
   MERGE_TITLE = "Merge files"
@@ -117,20 +112,15 @@ else:
   CONVERT_BTN = 'Convert to pdf'
 
 
-  FROM_TXT = 'from'
-  TO_TXT = 'to'
+  FROM_TXT = 'from page: '
+  TO_TXT = 'to page: '
   TOP_TXT = 'top'
   BOTTOM_TXT = 'bottom'
   RIGHT_TXT = 'right'
   LEFT_TXT = 'left'
 
+  PREVIEW_TEXT = 'Preview'
+
   PROCESS_COMPLETE = "Process Completed"
 
   EACH_PAGE_TEXT = "Convert each page to single image"
-
-
-  # SPLITING_MSG = 'file have been splited successfully.'
-  # MERGING_MSG = 'files have been merged successfully.'
-  # CROPING_MSG = 'file have been croped successfully.'
-  # EXTRACTING_MSG = 'image have been extract successfully from file.'
-  # TOPDF_MSG = 'images have been converted to pdf successfully.'

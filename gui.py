@@ -16,7 +16,7 @@ from src.toggleSwitch import Switch
 from src.imageLabel import ImageLabel
 from src.browseForm import BrowseForm, BrowseForm2
 from src.linkLabel import LinkLabel
-from src.entry import NumEntry
+from src.entry import EntryWithPlusMinus
 from src.gif import GifLabel
 from src import func
 
@@ -150,9 +150,12 @@ class AppGui(tk.Frame):
     BrowseForm(_f, self.file_path).pack(padx=START_PADDING_24, anchor=NW, fill='x', expand=True)
 
     _n = tk.Frame(_f, bg=_f['bg'])
-    NumEntry(_n,  placeholder=FROM_TXT, textvariable=self.start_page, _min=1).pack(side=START_DIR, padx=END_PADDING_10, fill='x', expand=True)
-    NumEntry(_n, placeholder=TO_TXT, textvariable=self.end_page, _min=1).pack(side=START_DIR, fill='x', expand=True)
-    _n.pack(padx=START_PADDING_24, fill='x', expand=True, pady=(10,0))
+    tk.Label(_n, bg=_f['bg'], text=FROM_TXT, font=FONT_SM).pack(side=START_DIR, padx=END_PADDING_10)
+    EntryWithPlusMinus(_n, textvariable=self.start_page, _min=1).pack(side=START_DIR, padx=END_PADDING_10, fill='x')
+    tk.Label(_n, bg=_f['bg'], text=TO_TXT, font=FONT_SM).pack(side=START_DIR, padx=START_PADDING_24)
+    self.entry_end = EntryWithPlusMinus(_n, textvariable=self.end_page, _min=1)
+    self.entry_end.pack(side=START_DIR, fill='x')
+    _n.pack(padx=START_PADDING_24, fill='x', expand=True, pady=(20,0))
 
     Button(_f, text=SPLIT_BTN, command=self.split).pack(side=START_DIR,padx=START_PADDING_24, pady=(30,0), anchor=NW)
     GifLabel(_f, r'img\\loading_blue.gif').pack(side=START_DIR, anchor='sw', pady=(0,2))
@@ -183,27 +186,31 @@ class AppGui(tk.Frame):
 
     BrowseForm(_f, self.file_path).pack(padx=START_PADDING_24, anchor=NW, fill='x', expand=True)
 
-    _n = tk.Frame(_f, bg=_f['bg'])
+    _n = tk.Frame(_f, bg=_f['bg'], bd=0)
     _n.grid_columnconfigure((0, 1, 2), weight=1)
     _n.pack(pady=10, fill='x')
 
-    NumEntry(_n, textvariable=self.top, placeholder=TOP_TXT).grid(row=0, column=1)
-    NumEntry(_n, textvariable=self.left, placeholder=LEFT_TXT).grid(row=1, column=0)
-    self.canvas = tk.Canvas(_n, width=CANVAS_W, height=CANVAS_H)
-    self.canvas.grid(row=1, column=1, padx=5, pady=5)
-
-    NumEntry(_n, textvariable=self.right, placeholder=RIGHT_TXT).grid(row=1, column=2)
-    self.next = ButtonSmall(_n, text="◄", command=self.next_thumbail)
-    self.next.grid(row=2, column=0)
-    NumEntry(_n, textvariable=self.bottom, placeholder=BOTTOM_TXT).grid(row=2, column=1)
-    self.previous = ButtonSmall(_n, text="►", command=self.previous_thumbail)
-    self.previous.grid(row=2, column=2)
+    self.canvas = tk.Canvas(_n, width=CANVAS_W, height=CANVAS_H, relief='flat',highlightthickness=0, bd=0)
+    self._textpreview = self.canvas.create_text(CANVAS_W//2, CANVAS_H//2, text=PREVIEW_TEXT, fill='gray')
 
     self.line_top = self.canvas.create_line(0, 0, CANVAS_W, 0, fill="red")
     self.line_bottom = self.canvas.create_line(0, CANVAS_H, CANVAS_W, CANVAS_H, fill="red")
     self.line_left = self.canvas.create_line(0, 0, 0, CANVAS_H, fill="red")
     self.line_right = self.canvas.create_line(CANVAS_W, 0, CANVAS_W, CANVAS_H, fill="red")
     
+
+    EntryWithPlusMinus(_n, textvariable=self.top, placeholder=TOP_TXT, _max=CANVAS_H).grid(row=0, column=1)
+    EntryWithPlusMinus(_n, textvariable=self.left, placeholder=LEFT_TXT, _max=CANVAS_W).grid(row=1, column=0, sticky='e')
+    
+    self.canvas.grid(row=1, column=1, pady=5)
+
+    EntryWithPlusMinus(_n, textvariable=self.right, placeholder=RIGHT_TXT, _max=CANVAS_W).grid(row=1, column=2, sticky='w')
+    self.next = ButtonSmall(_n, text="◄", command=self.next_thumbail)
+    self.next.grid(row=2, column=0)
+    EntryWithPlusMinus(_n, textvariable=self.bottom, placeholder=BOTTOM_TXT, _max=CANVAS_H).grid(row=2, column=1)
+    self.previous = ButtonSmall(_n, text="►", command=self.previous_thumbail)
+    self.previous.grid(row=2, column=2)
+
     Button(_f, text=CROP_BTN, command=self.crop).pack(side=START_DIR,padx=START_PADDING_24, pady=(30,0), anchor=NW)
     GifLabel(_f, r'img\\loading_blue.gif').pack(side=START_DIR, anchor='sw', pady=(0,2))
     return _f
@@ -299,10 +306,6 @@ class AppGui(tk.Frame):
     self.canvas.config(width=img.width, height=img.height)
     self.show_image_on_canvas(img)
 
-    # self.cover = ImageTk.PhotoImage(img)
-    # self.thumbnail = self.canvas.create_image(img.width/2, img.height/2, image=self.cover)
-    # self.canvas.tag_lower(self.thumbnail)
-
     self.next.on_unable()
 
   
@@ -347,6 +350,7 @@ class AppGui(tk.Frame):
     self.cover = ImageTk.PhotoImage(img)
     self.thumbnail = self.canvas.create_image(img.width/2, img.height/2, image=self.cover)
     self.canvas.tag_lower(self.thumbnail)
+    self.canvas.tag_lower(self._textpreview)
 
 
   def on_change_lang_ar(self):
@@ -372,7 +376,11 @@ class AppGui(tk.Frame):
       
       self.doc = self.init_doc()
 
+
       self.show_thumbnail()
+
+      self.entry_end._max = self.doc.pageCount
+
 
       for screen in self.screens[:-2]:
         screen.pack_slaves()[-2].on_unable()
