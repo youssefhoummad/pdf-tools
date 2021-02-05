@@ -1,5 +1,8 @@
+
+### Screenshots
 ![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/main/docs/img/split.png)
 ![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/main/docs/img/crop.png)
+![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/main/docs/img/Extract.png)
 
 ### Whats new in v2.2.1
 - Add possibilty to preview all pages in croping.
