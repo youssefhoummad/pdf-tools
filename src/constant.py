@@ -92,7 +92,7 @@ else:
   MERGE_TITLE = "Merge files"
   CROP_TITLE = "Crop margins "
   EXTRACT_TITLE = "Extract images"
-  IMAGES_TITLE = "images to pdf"
+  IMAGES_TITLE = "Images to pdf"
   ABOUT_TITLE = "ABOUT"
 
   SPLIT_DESC = "Separate one page or a whole set for easy conversion\n into independent PDF files."
