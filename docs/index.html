@@ -1,129 +1,328 @@
+
 <!DOCTYPE html>
 <html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
-<head>
+		<title>Pdf tools &mdash; collections of tools works with pdf files</title>
+		<meta name="description" content="Free Bootstrap 4 Template by uicookies.com">
+		<meta name="keywords" content="Free website templates, Free bootstrap themes, Free template, Free bootstrap, Free website template">
+    
+    <link href="https://fonts.googleapis.com/css?family=Crimson+Text:400,400i,600|Montserrat:200,300,400" rel="stylesheet">
 
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="">
-  <meta name="author" content="">
+		<link rel="stylesheet" href="assets/css/bootstrap.css">
+    <link rel="stylesheet" href="assets/css/ionicons.min.css">
 
-  <title>One Page Wonder - Start Bootstrap Template</title>
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+    
+    
+    <link rel="stylesheet" href="assets/css/slick.css">
+    <link rel="stylesheet" href="assets/css/slick-theme.css">
 
-  <!-- Bootstrap core CSS -->
-  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/helpers.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/landing-2.css">
+	</head>
+	<body data-spy="scroll" data-target="#pb-navbar" data-offset="200">
 
-  <!-- Custom fonts for this template -->
-  <link href="https://fonts.googleapis.com/css?family=Catamaran:100,200,300,400,500,600,700,800,900" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css?family=Lato:100,100i,300,300i,400,400i,700,700i,900,900i" rel="stylesheet">
-
-  <!-- Custom styles for this template -->
-  <link href="css/one-page-wonder.min.css" rel="stylesheet">
-
-</head>
-
-<body>
-
-  <!-- Navigation -->
-  <!-- <nav class="navbar navbar-expand-lg navbar-dark navbar-custom fixed-top">
-    <div class="container">
-      <a class="navbar-brand" href="#">Start Bootstrap</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarResponsive">
-        <ul class="navbar-nav ml-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="#">Sign Up</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Log In</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav> -->
-
-  <header class="masthead text-center text-white">
-    <div class="masthead-content">
+    <nav class="navbar navbar-expand-lg navbar-dark pb_navbar pb_scrolled-light" id="pb-navbar">
       <div class="container">
-        <h1 class="masthead-heading mb-0">PDF tools</h1>
-        <h2 class="mb-0">collections of tools</h2>
-        <a href="https://github.com/youssefhoummad/pdf-tools/releases/" class="btn btn-primary btn-xl  mt-5">Download it</a>
-      </div>
-    </div>
-    <!-- <div class="bg-circle-1 bg-circle"></div>
-    <div class="bg-circle-2 bg-circle"></div>
-    <div class="bg-circle-3 bg-circle"></div>
-    <div class="bg-circle-4 bg-circle"></div> -->
-  </header>
-
-  <section>
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-6 order-lg-2">
-          <div class="p-5">
-            <img class="img-fluid" src="img/split.png" alt="">
-          </div>
-        </div>
-        <div class="col-lg-6 order-lg-1">
-          <div class="p-5">
-            <h2 class="display-4">Split your files...</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quod aliquid, mollitia odio veniam sit iste esse assumenda amet aperiam exercitationem, ea animi blanditiis recusandae! Ratione voluptatum molestiae adipisci, beatae obcaecati.</p>
-          </div>
+        <a class="navbar-brand" href="index.html">PDF Tools</a>
+        <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#probootstrap-navbar" aria-controls="probootstrap-navbar" aria-expanded="false" aria-label="Toggle navigation">
+          <span><i class="ion-navicon"></i></span>
+        </button>
+        <div class="collapse navbar-collapse" id="probootstrap-navbar">
+          <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="#section-home">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="#section-features">Features</a></li>
+            <li class="nav-item"><a class="nav-link" href="#section-reviews">Reviews</a></li>
+            <li class="nav-item"><a class="nav-link" href="#section-faq">FAQ</a></li>
+            <li class="nav-item cta-btn ml-xl-2 ml-lg-2 ml-md-0 ml-sm-0 ml-0"><a id="myBtn2" class="nav-link" ><span class="pb_rounded-4 px-4">Download Now</span></a></li>
+          </ul>
         </div>
       </div>
-    </div>
-  </section>
+    </nav>
+    <!-- END nav -->
 
-  <section>
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-6">
-          <div class="p-5">
-            <img class="img-fluid" src="img/crop.png" alt="">
+  <!-- Download Modal -->
+  <div id="myModal" class="modal">
+
+    <!-- Modal content -->
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <p><a href="https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.2/Pdf-tools-installer.exe">Download installer file</a></p>
+      <p><a href="https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.2/PDF-tools.zip">Download zip file</a></p>
+    </div>
+
+  </div>
+
+
+    <section class="pb_cover_v3 overflow-hidden cover-bg-indigo cover-bg-opacity text-left pb_gradient_v1 pb_slant-light" id="section-home">
+      <div class="container">
+        <div class="row align-items-center justify-content-center">
+          <div class="col-md-4">
+            <h2 class="heading mb-3">Expert Pdf files</h2>
+            <div class="sub-heading">
+              <p class="mb-4">No more quality loss, lossly compress your web images without hassle.</p>
+              <p class="mb-5"><button id="myBtn" class="btn btn-success btn-lg pb_btn-pill smoothscroll"><span class="pb_font-14 text-uppercase pb_letter-spacing-1">Download Now</span></button></p>
+            </div>
+          </div> 
+          <div class="col-md-1">
+          </div>
+          <div class="col-md-7 relative align-self-center">
+            <!--App Screenshot here-->
+            <img src="assets/images/webimage.png" class="img-fluid mt-5 pt-5">
+          </div> 
+        </div>
+      </div>
+    </section>
+    <!-- END section -->
+
+    <section class="pb_section bg-light pb_slant-white pb_pb-250" id="section-features">
+      <div class="container">
+        <div class="row justify-content-center mb-5">
+          <div class="col-md-6 text-center mb-5">
+            <h5 class="text-uppercase pb_font-15 mb-2 pb_color-dark-opacity-3 pb_letter-spacing-2"><strong>Features</strong></h5>
+            <h2>App Features</h2>
           </div>
         </div>
-        <div class="col-lg-6">
-          <div class="p-5">
-            <h2 class="display-4">Crop margins from files</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quod aliquid, mollitia odio veniam sit iste esse assumenda amet aperiam exercitationem, ea animi blanditiis recusandae! Ratione voluptatum molestiae adipisci, beatae obcaecati.</p>
+        <div class="row">
+          <div class="col-lg-4 col-md- col-sm-6">
+            <div class="media d-block pb_feature-v1 text-left">
+              <div class="pb_icon"><i class="ion-ios-bookmarks-outline pb_icon-gradient"></i></div>
+              <div class="media-body">
+                <h5 class="mt-0 mb-3 heading">Minimal Design</h5>
+                <p class="text-sans-serif">Straight to the point design, we took out all the unnecessary stuff. </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md- col-sm-6">
+            <div class="media d-block pb_feature-v1 text-left">
+              <div class="pb_icon"><i class="ion-ios-speedometer-outline pb_icon-gradient"></i></div>
+              <div class="media-body">
+                <h5 class="mt-0 mb-3 heading">Fast Compression</h5>
+                <p class="text-sans-serif">No more laggy processes, Compress your web images in just seconds.</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-4 col-md- col-sm-6">
+            <div class="media d-block pb_feature-v1 text-left">
+              <div class="pb_icon"><i class="ion-ios-infinite-outline pb_icon-gradient"></i></div>
+              <div class="media-body">
+                <h5 class="mt-0 mb-3 heading">Folder-level Compression</h5>
+                <p class="text-sans-serif">Either choose to compress a single image or compress all images in a specific folder</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+    <!-- END section -->
 
-  <section>
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-6 order-lg-2">
-          <div class="p-5">
-            <img class="img-fluid" src="img/extract.png" alt="">
+    <section class="pb_section pb_slant-light pb_pb-220" id="section-reviews">
+      <div class="container">
+        <div class="row justify-content-center mb-1">
+          <div class="col-md-6 text-center mb-5">
+            <h5 class="text-uppercase pb_font-15 mb-2 pb_color-dark-opacity-3 pb_letter-spacing-2"><strong>Reviews</strong></h5>
+            <h2>what our users think</h2>
           </div>
         </div>
-        <div class="col-lg-6 order-lg-1">
-          <div class="p-5">
-            <h2 class="display-4">Extract images from any files</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quod aliquid, mollitia odio veniam sit iste esse assumenda amet aperiam exercitationem, ea animi blanditiis recusandae! Ratione voluptatum molestiae adipisci, beatae obcaecati.</p>
+        <div class="row">
+          <div class="col-md">
+            <div class="pb_slide_testimonial_sync_v1">
+              <div class="pb_slider_content js-pb_slider_content2">
+                <div>
+                  <div class="media d-block text-center testimonial_v1 pb_quote_v2">
+                    <div class="media-body">
+                      <div class="quote">&ldquo;</div>
+                      <blockquote class="mb-5">Works as described, saved me 3mb. Kudos!</blockquote>
+                      <p>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star-half text-warning"></i>
+                        <i class="ion-ios-star-outline text-warning"></i>
+                      </p>
+                      <h3 class="heading">Youssef Hoummad</h3>
+                      <span class="subheading">@youssefhoummad</span>
+                      
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="media d-block text-center testimonial_v1 pb_quote_v2">
+                    <div class="media-body">
+                      <div class="quote">&ldquo;</div>
+                      <blockquote class="mb-5">Works as described, saved me 3mb. Kudos!</blockquote>
+                      <p>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star-half text-warning"></i>
+                        <i class="ion-ios-star-outline text-warning"></i>
+                      </p>
+                      <h3 class="heading">Youssef Hoummad</h3>
+                      <span class="subheading">@youssefhoummad</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="media d-block text-center testimonial_v1 pb_quote_v2">
+                    <div class="media-body">
+                      <div class="quote">&ldquo;</div>
+                      <blockquote class="mb-5">Works as described, saved me 3mb. Kudos!</blockquote>
+                      <p>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star-half text-warning"></i>
+                        <i class="ion-ios-star-outline text-warning"></i>
+                      </p>
+                      <h3 class="heading">Youssef Hoummad</h3>
+                      <span class="subheading">@youssefhoummad</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <div class="media d-block text-center testimonial_v1 pb_quote_v2">
+                    <div class="media-body">
+                      <div class="quote">&ldquo;</div>
+                      <blockquote class="mb-5">Works as described, saved me 3mb. Kudos!</blockquote>
+                      <p>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star text-warning"></i>
+                        <i class="ion-ios-star-half text-warning"></i>
+                        <i class="ion-ios-star-outline text-warning"></i>
+                      </p>
+                      <h3 class="heading">Youssef Hoummad</h3>
+                      <span class="subheading">@youssefhoummad</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-6 mx-auto">
+                  <div class="pb_slider_nav js-pb_slider_nav2">
+                    <div class="author">
+                      <img class="img-fluid rounded-circle" src="assets/images/avatar.png" alt="Generic placeholder image">
+                    </div>
+                    <div class="author">
+                      <img class="img-fluid rounded-circle" src="assets/images/avatar.png" alt="Generic placeholder image">
+                    </div>
+                    <div class="author">
+                      <img class="img-fluid rounded-circle" src="assets/images/avatar.png" alt="Generic placeholder image">
+                    </div>
+                    <div class="author">
+                      <img class="img-fluid rounded-circle" src="assets/images/avatar.png" alt="Generic placeholder image">
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+            </div>
+            <!-- END sync_v1 -->
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+    <!-- END section -->
+    <section class="pb_section pb_slant-white" id="section-faq">
+      <div class="container">
+        <div class="row justify-content-center mb-5">
+          <div class="col-md-6 text-center mb-5">
+            <h5 class="text-uppercase pb_font-15 mb-2 pb_color-dark-opacity-3 pb_letter-spacing-2"><strong>FAQ</strong></h5>
+            <h2>Frequently Asked Questions</h2>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-md">
+            <div id="pb_faq" class="pb_accordion" data-children=".item">
+              <div class="item">
+                <a data-toggle="collapse" data-parent="#pb_faq" href="#pb_faq1" aria-expanded="true" aria-controls="pb_faq1" class="pb_font-22 py-4">What is PyCompress?</a>
+                <div id="pb_faq1" class="collapse" role="tabpanel">
+                  <div class="py-3">
+                  <p>PyCompress is a lossless image compression tool.</p>
+                  <p>It can be used to reduce image sizes without significant quality loss. It is ideal for web content creators(Developers, bloggers e.t.c)</p>
+                  </div>
+                </div>
+              </div>
+              <div class="item">
+                <a data-toggle="collapse" data-parent="#pb_faq" href="#pb_faq2" aria-expanded="false" aria-controls="pb_faq2" class="pb_font-22 py-4">Is this available on my OS?</a>
+                <div id="pb_faq2" class="collapse" role="tabpanel">
+                  <div class="py-3">
+                    <p>PyCompress is currently available for download and use on Ubuntu(Linux) and Windows. We'd be rolling out support for Mac OS soon.</p>
+                  </div>
+                </div>
+              </div>
+              <div class="item">
+                <a data-toggle="collapse" data-parent="#pb_faq" href="#pb_faq3" aria-expanded="false" aria-controls="pb_faq3" class="pb_font-22 py-4">How do I run the app after installation?</a>
+                <div id="pb_faq3" class="collapse" role="tabpanel">
+                  <div class="py-3">
+                    <p>After <span style="color:#1d82ff;" id="myBtn3">downloading </span>the app, navigate to the folder and locate the "PyCompress" executable, you can run it by just double-clicking on it. Alternatively, if you're familiar with the terminal, navigate to the root folder containing the downloaded app and run "./PyCompress". For Windows users, just run the downloaded executable.  </p>
+                  </div>
+                </div>
+              </div>
+              <div class="item">
+                <a data-toggle="collapse" data-parent="#pb_faq" href="#pb_faq4" aria-expanded="false" aria-controls="pb_faq4" class="pb_font-22 py-4">How much does PyCompress cost?</a>
+                <div id="pb_faq4" class="collapse" role="tabpanel">
+                  <div class="py-3">
+                    <p>PyCompress is totally FREE, but we're open to <a href="#">donations.</a></p>
+                  </div>
+                </div>
+              </div>
 
-  <!-- Footer -->
-  <footer class="py-5 bg-black">
-    <div class="container">
-      <p class="m-0 text-center text-white small">Copyright &copy; youssefhoummad</p>
-    </div>
-    <!-- /.container -->
-  </footer>
+              <div class="item">
+                <a data-toggle="collapse" data-parent="#pb_faq" href="#pb_faq5" aria-expanded="false" aria-controls="pb_faq5" class="pb_font-22 py-4">I have technical problem, who do I email?</a>
+                <div id="pb_faq5" class="collapse" role="tabpanel">
+                  <div class="py-3">
+                    <p>Complaints, issues, feedbacks and recommendations should be mailed to the <a href="#">Developer</a> or if you're social, drop a tweet to <a href="https://twitter.com/iam_princek">@Onyenanu Princewill</a></p>
+                  </div>
+                </div>
+              </div>
 
-  <!-- Bootstrap core JavaScript -->
-  <!-- <script src="vendor/jquery/jquery.min.js"></script> -->
-  <!-- <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <footer class="pb_footer bg-light" role="contentinfo">
+      <div class="container">
+        <div class="row text-center">
+          <div class="col">
+            <ul class="list-inline">
+              <li class="list-inline-item"><a href="#" class="p-2"><i class="fa fa-facebook"></i></a></li>
+              <li class="list-inline-item"><a href="#" class="p-2"><i class="fa fa-twitter"></i></a></li>
+              <li class="list-inline-item"><a href="#" class="p-2"><i class="fa fa-linkedin"></i></a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col text-center">
+            <p class="pb_font-14">&copy; 2019 <a href="">PDF-tools</a> Free Image Compression tool. All Rights Reserved. <br> Designed &amp; Developed by <a href="https://twitter.com/youssefhoummad">Youssef Hoummad</a> 
+          </div>
+        </div>
+      </div>
+    </footer>
+    
+    <!-- loader -->
+    <div id="pb_loader" class="show fullscreen"><svg class="circular" width="48px" height="48px"><circle class="path-bg" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke="#eeeeee"/><circle class="path" cx="24" cy="24" r="22" fill="none" stroke-width="4" stroke-miterlimit="10" stroke="#1d82ff"/></svg></div>
 
-</body>
 
+
+    <script src="assets/js/jquery.min.js"></script>
+    
+    <script src="assets/js/popper.min.js"></script>
+    <script src="assets/js/bootstrap.min.js"></script>
+    <script src="assets/js/slick.min.js"></script>
+    <script src="assets/js/jquery.mb.YTPlayer.min.js"></script>
+
+    <script src="assets/js/jquery.waypoints.min.js"></script>
+    <script src="assets/js/jquery.easing.1.3.js"></script>
+
+    <script src="assets/js/main.js"></script>
+
+	</body>
 </html>
