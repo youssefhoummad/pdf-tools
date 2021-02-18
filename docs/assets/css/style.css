@@ -12,8 +12,17 @@
   font-weight: normal;
   font-style: normal; }
 
+
+
+  #myBtn{
+    cursor: pointer;
+    background-color: #5800ca !important;
+  }
+ 
+
   #myBtn2{
     cursor: pointer;
+    /* background-color: #5800ca !important; */
   }
  
   /* The Download Modal (background) */
@@ -236,7 +245,7 @@
   margin-bottom: 50px; }
   .pb_pricing_v1 .price {
     font-size: 50px;
-    color: #1d82ff; }
+    color: #f56918; }
     .pb_pricing_v1 .price sup {
       font-size: 20px;
       top: -1em; }
@@ -303,7 +312,7 @@
   .pb_list_v1 li span {
     line-height: 0;
     margin-right: 7px;
-    color: #1d82ff; }
+    color: #f56918; }
     .pb_list_v1 li span i {
       line-height: 0; }
       .pb_list_v1 li span i:before {
@@ -737,16 +746,16 @@
   background: #a5e9db; }
 
 .pb_gradient_v1:before {
-  background: #665fee;
+  background: #f56918;
   /* Old browsers */
-  background: -moz-linear-gradient(45deg, #665fee 0%, #27c2de 100%);
+  background: -moz-linear-gradient(45deg, #f56918 0%, #ffbc04 100%);
   /* FF3.6-15 */
-  background: -webkit-linear-gradient(45deg, #665fee 0%, #27c2de 100%);
+  background: -webkit-linear-gradient(45deg, #f56918 0%, #ffbc04 100%);
   /* Chrome10-25,Safari5.1-6 */
-  background: -o-linear-gradient(45deg, #665fee 0%, #27c2de 100%);
-  background: linear-gradient(45deg, #665fee 0%, #27c2de 100%);
+  background: -o-linear-gradient(45deg, #f56918 0%, #ffbc04 100%);
+  background: linear-gradient(45deg, #f56918 0%, #ffbc04 100%);
   /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#665fee', endColorstr='#27c2de',GradientType=1 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f56918', endColorstr='#ffbc04',GradientType=1 );
   /* IE6-9 fallback on horizontal gradient */
   content: "";
   position: absolute;
@@ -1192,7 +1201,7 @@ a {
       -moz-box-shadow: 0px 1px 10px -2px rgba(0, 0, 0, 0.15);
       box-shadow: 0px 1px 10px -2px rgba(0, 0, 0, 0.15); }
       .pb_navbar.scrolled.pb_scrolled-light .navbar-brand {
-        color: #1d82ff; }
+        color: #f56918; }
       @media (max-width: 991px) {
         .pb_navbar.scrolled.pb_scrolled-light .navbar-nav {
           background: none;
@@ -1204,10 +1213,10 @@ a {
         .pb_navbar.scrolled.pb_scrolled-light ul li a:hover, .pb_navbar.scrolled.pb_scrolled-light ul li a:active, .pb_navbar.scrolled.pb_scrolled-light ul li a:focus {
           color: #868e96 !important; }
         .pb_navbar.scrolled.pb_scrolled-light ul li a.active {
-          color: #1d82ff !important; }
+          color: #f56918 !important; }
       .pb_navbar.scrolled.pb_scrolled-light ul li.cta-btn > a > span {
         border: none;
-        background: #00CA4C;
+        background: #5800ca;
         color: #fff; }
 
 .pb_offcanvas-nav_v1 {
@@ -1537,7 +1546,7 @@ a {
     -moz-osx-font-smoothing: grayscale;
     content: "\f2c7"; }
   .pb_accordion .item > a[aria-expanded="true"] {
-    color: #1d82ff;
+    color: #f56918;
     border-bottom: 1px solid transparent; }
     .pb_accordion .item > a[aria-expanded="true"]:after {
       content: "\f2f4"; }
