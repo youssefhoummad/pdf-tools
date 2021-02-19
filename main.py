@@ -1,7 +1,7 @@
 import tkinter as tk, queue, os, subprocess
 import fitz
 
-from gui import AppGui
+from src.gui import AppGui
 from src.win10toast import ToastNotifier
 from src.utils import threaded
 from src.constant import *
@@ -191,19 +191,21 @@ class ThreadedApp(object):
     import sys
     self.master.destroy()
     sys.exit(1)
-
-
-
-if __name__ == '__main__':
-
-
+  
+def main():
   root = tk.Tk()
   root.title("Pdf tools")
   root.resizable(width=False, height=False)
   root.geometry("750x520")
-  root.iconbitmap(r'img\\icon.ico')
+  root.iconbitmap(r'D:\\برمجة\\pdf\\img\\icon.ico')
   # root.attributes('-transparentcolor', 'white')
 
   App = ThreadedApp(root)
 
-  root.mainloop()
+  root.mainloop()  
+
+if __name__ == '__main__':
+  main()
+
+
+
