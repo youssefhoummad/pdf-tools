@@ -16,9 +16,6 @@ class PDFinfo:
             pdf_handler = PdfFileReader(in_pdf)
             return pdf_handler.getNumPages()
     
-    @property
-    def filename(self) -> str:
-        return self.concat_filename()
     
     @property
     def filesize(self) -> str:
@@ -36,7 +33,8 @@ class PDFinfo:
 
 
     @property
-    def filename(self, max_length=30) -> str:
+    def filename(self) -> str:
+        max_length = 30
         concat_filename = f'{self.basename[0:max_length]}'
         if len(self.basename) > max_length:
             concat_filename += '…'
@@ -70,7 +68,9 @@ class Model:
         self.left =tk.IntVar(parent, name='left')
         self.right =tk.IntVar(parent, name='right')
 
-        self.each_page = tk.BooleanVar(parent, name="each_page") # must be boolean
+        self.each_page = tk.BooleanVar(parent, name="each_page") 
+
+        self.message_flash = tk.StringVar(parent, name="message_name")
 
     @property
     def pdf(self):

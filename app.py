@@ -3,14 +3,13 @@ import threading
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
-from tkinter import messagebox
+from tkinter import simpledialog
 
-import functions
+import functions as functions
 from model import PDFinfo, Model
 from tkview import tkView
-
-
 from mvc import  Controler
+from constants import PRIMARY_COLOR
 
 
 class App(Controler):
@@ -20,22 +19,21 @@ class App(Controler):
     pdf:PDFinfo = self.model.pdf
     from_page = self.model.start.get()-1
     to_page = self.model.end.get()-1
+
     if not pdf:
-      self.view.flash('success')
+      self.view.flash('error', "Pick pdf first!")
       return
     
-    self.view.thread(target=functions.split, args=(pdf.filepath, from_page, to_page))
+    self.view.thread(functions.split, pdf.filepath, from_page, to_page)
 
 
   def merge(self):
     pdf1:PDFinfo = self.model.pdf1
     pdf2:PDFinfo = self.model.pdf2
     if not pdf1 or not pdf2:
-      # messagebox.showwarning("Warning", "import first a pdf file!")
-      self.view.flash('error')
-
+      self.view.flash('error', "Pick pdf first!")
       return
-    self.view.thread(target=functions.merge, args=(pdf1.filepath, pdf2.filepath))
+    self.view.thread(functions.merge, pdf1.filepath, pdf2.filepath)
 
 
 
@@ -47,30 +45,33 @@ class App(Controler):
     bottom: int = self.model.bottom.get()
 
     if not pdf:
-      return
+      self.view.flash('error', "Pick pdf first!")
+
     
     if top==left==right==bottom==0: return
 
-    self.view.thread(target=functions.crop, args=(pdf.filepath, top, bottom, left, right))
+    self.view.thread(functions.crop, pdf.filepath, top, bottom, left, right)
 
 
   def compress(self):
     pdf:PDFinfo = self.model.pdf
     if not pdf:
+      self.view.flash('error', "Pick pdf first!")
       return
     
-    self.view.thread(target=functions.compress, args=(pdf.filepath,))
+    self.view.thread(functions.compress, pdf.filepath)
     
 
   def to_images(self):
     pdf:PDFinfo = self.model.pdf
     if not pdf:
+      self.view.flash('error', "Pick pdf first!")
       return
       
     if self.model.each_page:
-      self.view.thread(target=functions.to_images, args=(pdf.filepath,))
+      self.view.thread(functions.to_images, pdf.filepath,)
     else:
-      self.view.thread(target=functions.extract_images, args=(pdf.filepath,))
+      self.view.thread(functions.extract_images, pdf.filepath,)
 
 
 
@@ -94,9 +95,9 @@ class App(Controler):
 
 def style_it(root):
    
-  root.config(bg="#EFF4F8")
+  root.config(bg=PRIMARY_COLOR)
   ttk.Style().configure('TLabel', background="#FBFCFE", padding=(10,0))
-  ttk.Style().configure('TFrame', background="#EFF4F8")
+  ttk.Style().configure('TFrame', background=PRIMARY_COLOR)
   ttk.Style().configure('TButton', padding=(0,0))
   ttk.Style().configure('TCheckbutton', background="#FBFCFE", highlightbackground="#FBFCFE")
 
