@@ -18,6 +18,16 @@ creat an instance from your controler and pass class name for view and model in 
 run the app
 > app.mainloop()
 
+when you need to call a method from view from controller use:
+> self.view.method()
+
+to get data from model 
+> self.model.data
+
+to call method from controller use:
+> self.controler.method()
+
+
 
 NB: if you have a progressbar in your <MyView> you can impliment a methode call <thread>
     copy it from <View> abc and  follow the instructions
@@ -55,7 +65,7 @@ class Controler(ABC):
     self.queue = queue.Queue()
 
     # Set up the GUI part
-    self.model = Model(self.parent)
+    self.model = Model(self.parent) # for normal case remove all args
     self.view = View(self.parent, controler=self, model=self.model,  queue=self.queue)
     self.view.setup(self, self.model)
     # Set up the thread to do asynchronous I/O
@@ -115,11 +125,12 @@ class View(ABC):
 
     @abstractmethod
     def setup(self, controler, model):
-      pass
+      self.controler = controler
+      self.model = model
       # add here ui widgtes...
 
 
-    def thread(self, target, args=(), kwargs=()):
+    def thread(self, target, args=(), kwargs={}):
         """ use this methode for make progress bar update with threading task"""
 
         thread = threading.Thread(target=target, args=args, kwargs=kwargs)
