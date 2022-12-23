@@ -26,6 +26,9 @@ translate =  {
         'left:':"gauche",
 
         'rotate degree:':"degré de rotation:",
+        'add files':"ajouter des fichiers",
+        'clear all':"tout effacer",
+        'save':"sauvegarder",
 
         "Convert file": "Convertir",
         "Split file": "Diviser",
@@ -68,6 +71,9 @@ translate =  {
         'left:':":من اليسار",
 
         'rotate degree:':":درجة الدوران",
+        'add files':"إضافة ملفات",
+        'clear all':"مسح الكل",
+        'save':"حفظ",
 
         "Convert file": "تصدير الصور",
         "Split file": "نقسيم الملف",

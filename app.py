@@ -285,7 +285,7 @@ class tkView(View):
       
     _f = ttk.Frame(parent, padding=15)
     ttk.Label(_f, text=_("Every tool you need to use PDFs! Merge, split, convert, rotate with just a few clicks."), wraplength=500, justify=left).pack(side='top', anchor=w, pady=12)
-    ttk.Label(_f, text="@youssefhoummad", justify=left).pack(side='top', anchor=w, pady=(8,20))
+    ttk.Label(_f, text="@youssefhoummad", justify=left).pack(side='top', anchor=w, pady=(8,12))
 
     _g = ttk.Frame(_f)
     ttk.Label(_g, text=_('Choose language:')).pack(side=left, anchor=w, padx=5)
@@ -294,7 +294,7 @@ class tkView(View):
 
     ttk.Checkbutton(_f,text=_('open pdf after operation is finished'), variable=open_ch).pack(side='top', anchor=w, pady=12)
 
-    ttk.Button(_f, text='save', command=save_change).pack(side='bottom', anchor=e)
+    ttk.Button(_f, text=_('save'), command=save_change).pack(side='bottom', anchor=e)
 
 
     return _f
@@ -422,12 +422,12 @@ class tkView(View):
     tree["columns"]=("files")
     tree.heading("#0", text="files")
 
-    ttk.Button(_f, text="add files", command=self.controler.multi_browse).grid(row=1, column=0, sticky=w)
+    ttk.Button(_f, text=_("add files"), command=self.controler.multi_browse).grid(row=1, column=0, sticky=w)
 
-    ttk.Button(_f, text="clear all", command=self.clear).grid(row=1, column=1, sticky='e')
-    ttk.Button(_f, text="del selected", command=self.delete).grid(row=1, column=2, padx=2)
-    ttk.Button(_f, text="move up", command=self.move_up).grid(row=1, column=3)
-    ttk.Button(_f, text="move down", command=self.move_down).grid(row=1, column=4, padx=2)
+    ttk.Button(_f, text=_("clear all"), command=self.clear).grid(row=1, column=1, sticky='e')
+    ttk.Button(_f, text="-",width=5, command=self.delete).grid(row=1, column=2, padx=2)
+    ttk.Button(_f,  text=u"↑", width=5, command=self.move_up).grid(row=1, column=3)
+    ttk.Button(_f, text=u"↓", width=5, command=self.move_down).grid(row=1, column=4, padx=2)
 
     tree.grid(row=2, column=0, columnspan=5, sticky='snew', pady=4)
 
