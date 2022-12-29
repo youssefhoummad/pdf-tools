@@ -12,6 +12,8 @@ import languages
 from utils import *
 
 
+
+
 config = ConfigParser()
 
 if not os.path.exists('config.ini'):
@@ -540,26 +542,10 @@ class tkView(View):
 
 
 def style_root(root):
-  # from tkinter import font
-  import tempfile
 
-  # transparent icon
-  ICON = (b'\x00\x00\x01\x00\x01\x00\x10\x10\x00\x00\x01\x00\x08\x00h\x05\x00\x00'
-          b'\x16\x00\x00\x00(\x00\x00\x00\x10\x00\x00\x00 \x00\x00\x00\x01\x00'
-          b'\x08\x00\x00\x00\x00\x00@\x05\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-          b'\x00\x01\x00\x00\x00\x01') + b'\x00'*1282 + b'\xff'*64
-
-  _, ICON_PATH = tempfile.mkstemp()
-  with open(ICON_PATH, 'wb') as icon_file:
-      icon_file.write(ICON)
-
-  # theme = config.get('main', 'theme')
-
-  # sv_ttk.set_theme(theme)
-  # font.nametofont("SunValleyBodyFont").configure(family="Segoe UI")
-  # font.nametofont("SunValleyBodyStrongFont").configure(family="Segoe UI Black", weight="bold")
-  root.iconbitmap(default=ICON_PATH)
+  root.iconbitmap(default='icon.ico')
   root.configure( background="#EEF4F9")
+
 
 
 def style_ttk(root):
@@ -570,14 +556,17 @@ def style_ttk(root):
   e = 'e'
 
   style = ttk.Style(root)
-  style.configure('TNotebook.Tab',padding=(8,3)) # tabposition='wn' option to change position of tab
+  style.configure('TNotebook.Tab',padding=(8,4))
   style.configure('Accent.TButton', padding=(4, 2))
-  style.configure('TNotebook', tabposition='nw')
+
+  for Tstyle in ('TFrame', 'TLabel', 'TNotebook', 'TCheckbutton', 'TMenubutton'):
+    style.configure(Tstyle, background="#EEF4F9")
 
   if lang == 'ar':
     right, left = left, right
     w, e = e, w
-    style.configure('TNotebook', tabposition='ne')
+
+  style.configure('TNotebook', tabposition='n'+w)
 
   style.layout('TCheckbutton',
       [('Checkbutton.padding', {'sticky': 'nswe', 'children': [
@@ -589,8 +578,6 @@ def style_ttk(root):
     )
 
 
-  for Tstyle in ('TFrame', 'TLabel', 'TNotebook', 'TCheckbutton', 'TMenubutton'):
-    style.configure(Tstyle, background="#EEF4F9")
 
   
 def save_config(variable:str, value)->None:
@@ -602,13 +589,13 @@ def save_config(variable:str, value)->None:
 
 
 
+
 def main():
   root = TkinterDnD.Tk() # work with drog and drop
 
   root.title("Pdf tools")
   # root.geometry('872x500')
   style_root(root)
-  # style_ttk(root)
 
   root.resizable(width=False, height=False)
 
