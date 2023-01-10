@@ -1,7 +1,7 @@
 
 ### Screenshots
 ![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/3.3.0/docs/img/split.png)
-![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/3.3.0/docs/img/crop.png)
+![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/3.3.0/docs/img/preview.png)
 ![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/3.3.0/docs/img/extract.png)
 
 ### Whats new in v3.3.0
