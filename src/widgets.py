@@ -147,10 +147,10 @@ class CanvasCrop(tk.Canvas):
     self.create_text(self.width//2, self.height//2, text='', font=('Segoe Fluent Icons', 80),fill='gray90', tags=('preview'))
     self.create_rectangle(20, 20, self.width-29, self.height-20, dash=True, tags=('dash'), outline='gray70')
 
-    self.line_top = self.create_line(-1, -1, self.width,-1, fill="red")
-    self.line_bottom = self.create_line(0, self.height, self.width, self.height, fill="red")
-    self.line_left = self.create_line(-1, -1, -1, self.height, fill="red")
-    self.line_right = self.create_line(self.width, 0, self.width, self.height, fill="red")
+    self.line_top = self.create_line(-1, -1, self.width,-1, fill="red", tags='lines')
+    self.line_bottom = self.create_line(0, self.height, self.width, self.height, fill="red", tags='lines')
+    self.line_left = self.create_line(-1, -1, -1, self.height, fill="red", tags='lines')
+    self.line_right = self.create_line(self.width, 0, self.width, self.height, fill="red", tags='lines')
 
   
   def on_change_line_top(self, *args):
@@ -173,7 +173,8 @@ class CanvasCrop(tk.Canvas):
 
 
   def show_image(self, img):
-    self.delete('all')
+    self.delete('picture', 'preview', 'dash')
+
     org_w, org_h = img.width, img.height # memorize origine width
     ratio = org_w/org_h
     self.height = self.width / ratio
@@ -182,15 +183,14 @@ class CanvasCrop(tk.Canvas):
     self.model.zoom_thumbnail = org_w / img.width
     self.config(height=self.height)
 
-    # self.delete('dash', 'preview', 'picture')
-
     self.cover = ImageTk.PhotoImage(img)
-    self.create_image(self.width/2, self.height/2, image=self.cover, tags=('picture'))
-    # self.tag_lower(self.thumbnail)
+    self.thumbnail = self.create_image(self.width/2, self.height/2, image=self.cover, tags=('picture'))
+    self.tag_lower(self.thumbnail)
 
 
   def show_picture(self, path):
-    self.delete('all')
+    self.delete('picture', 'preview', 'dash')
+
     img = Image.open(path)
     org_w, org_h = img.width, img.height # memorize origine width
     ratio = org_w/org_h
@@ -202,12 +202,12 @@ class CanvasCrop(tk.Canvas):
     # self.delete('dash', 'preview', 'picture')
 
     self.cover = ImageTk.PhotoImage(img)
-    self.create_image(self.width/2, self.height/2, image=self.cover, tags=('picture'))
-    # self.tag_lower(self.thumbnail)
+    self.thumbnail = self.create_image(self.width/2, self.height/2, image=self.cover, tags=('picture'))
+    self.tag_lower(self.thumbnail)
   
   
   def clean(self):
-    self.delete('all')
+    self.delete('picture')
     self.create_text(self.width//2, self.height//2, text='', font=('Segoe Fluent Icons', 80),fill='gray90', tags=('preview'))
     self.create_rectangle(20, 20, self.width-29, self.height-20, dash=True, tags=('dash'), outline='gray70')
 
