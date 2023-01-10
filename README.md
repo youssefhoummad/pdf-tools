@@ -8,7 +8,7 @@
 - Add possibilty to preview.
 - Fixed bugs.
 
-### Whats new in PDF-Tools v2.1.0
+### Whats new in PDF-Tools
 - Support **arabic**: You can choose arabic from about pan.
 - Add new functionality **images to pdf**: Convert multi images to one pdf.
 - Support windows 11 notifications: **Click** on the notification to open the output file.
