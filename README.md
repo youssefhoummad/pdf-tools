@@ -22,4 +22,4 @@
 - Convert multi-images to one file.
 
 ### Download
-[https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.2/Pdf-tools-installer.exe](https://github.com/youssefhoummad/pdf-tools/releases/download/v3.3.0/pdf.tools.v3.3.exe)
+https://github.com/youssefhoummad/pdf-tools/releases/download/v3.3.0/pdf.tools.v3.3.exe
