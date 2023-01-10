@@ -1,8 +1,8 @@
 
 ### Screenshots
-![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/main/docs/img/split.png)
-![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/main/docs/img/crop.png)
-![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/main/docs/img/Extract.png)
+![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/3.3.0/docs/img/split.png)
+![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/3.3.0/docs/img/crop.png)
+![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/3.3.0/docs/img/extract.png)
 
 ### Whats new in v2.2.1
 - Add possibilty to preview all pages in croping.
@@ -23,6 +23,4 @@
 - Convert multi-images to one file.
 
 ### Download
-https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.2/Pdf-tools-installer.exe
-
-https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.2/PDF-tools.zip
+[https://github.com/youssefhoummad/pdf-tools/releases/download/v2.2.2/Pdf-tools-installer.exe](https://github.com/youssefhoummad/pdf-tools/releases/download/v3.3.0/pdf.tools.v3.3.exe)
