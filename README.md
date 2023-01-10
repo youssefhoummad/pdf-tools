@@ -4,15 +4,14 @@
 ![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/3.3.0/docs/img/crop.png)
 ![](https://raw.githubusercontent.com/youssefhoummad/pdf-tools/3.3.0/docs/img/extract.png)
 
-### Whats new in v2.2.1
-- Add possibilty to preview all pages in croping.
-- Convert pdf to images page by page.
+### Whats new in v3.3.0
+- Add possibilty to preview.
 - Fixed bugs.
 
 ### Whats new in PDF-Tools v2.1.0
 - Support **arabic**: You can choose arabic from about pan.
 - Add new functionality **images to pdf**: Convert multi images to one pdf.
-- Support windows 10 notifications: **Click** on the notification to open the output file.
+- Support windows 11 notifications: **Click** on the notification to open the output file.
 
 ### All functionality :
 - Split the file between two pages.
