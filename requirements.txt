@@ -1,5 +1,1 @@
-pymupdf
 pillow
-tkinterdnd2
-winotify
-awesometkinter
