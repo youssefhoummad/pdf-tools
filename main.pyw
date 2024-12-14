@@ -1,20 +1,147 @@
 
 import configparser
-import ctypes
+from ctypes import WINFUNCTYPE, Structure, byref, c_buffer, c_uint, c_uint64, c_void_p, sizeof, windll
 # import multiprocessing
+
 import os
 import tkinter as tk
 from tkinter import filedialog, ttk
 import re
-from PIL import ImageTk, Image
 from pathlib import Path
 import sys
-
-path = str(Path(Path(__file__).parent.absolute()) / 'packages')
-sys.path.insert(0, path)
+from typing import Callable
 
 
+sys.path.append('./libs') # pip install --target=./libs -r requirements.txt
+
+
+from PIL import ImageTk, Image
 import pypdfium2 as pdfium
+# from winotify import Notification
+
+
+
+class TitlebarFlasher:
+    def __init__(self, master):
+        self.master = master
+        # Get the window handle
+        self.hwnd = windll.user32.GetForegroundWindow()
+    
+    def flash_titlebar(self, count=3, interval=0.5):
+        """
+        Flash the titlebar using Win32 API
+        
+        :param count: Number of times to flash
+        :param interval: Time between flashes (in seconds)
+        """
+        # FLASHW_ALL: Flash both the window caption and taskbar button
+        # FLASHW_TIMER: Flash continuously
+        FLASHW_ALL = 0x00000003
+        FLASHW_STOP = 0
+        
+        # Struct to pass flash parameters
+        class FLASHWINFO(Structure):
+            _fields_ = [
+                ('cbSize', c_uint),
+                ('hwnd', c_void_p),
+                ('dwFlags', c_uint),
+                ('uCount', c_uint),
+                ('dwTimeout', c_uint)
+            ]
+        
+        # Create flash info structure
+        flash_info = FLASHWINFO()
+        flash_info.cbSize = sizeof(flash_info)
+        flash_info.hwnd = self.hwnd
+        flash_info.dwFlags = FLASHW_ALL
+        flash_info.uCount = count
+        flash_info.dwTimeout = int(interval * 1000)  # Convert to milliseconds
+        
+        # Call the FlashWindowEx function
+        windll.user32.FlashWindowEx(byref(flash_info))
+
+
+
+class apply_dnd():
+    """apply file drag and drop in a widget"""
+    
+    def __init__(self, widget: int, func: Callable, char_limit: int=260) -> None:
+
+        hwnd = widget.winfo_id()
+
+        GetWindowLong = windll.user32.GetWindowLongPtrA
+        SetWindowLong = windll.user32.SetWindowLongPtrA
+        typ = c_uint64
+
+        prototype = WINFUNCTYPE(typ, typ, typ, typ, typ)
+        WM_DROP_FILES = 0x233
+        GWL_WND_PROC = -4
+        create_buffer = c_buffer
+        func_DragQueryFile = (windll.shell32.DragQueryFile)
+
+        def py_drop_func(hwnd, msg, wp, lp):
+            global files
+            if msg == WM_DROP_FILES:
+                count = func_DragQueryFile(typ(wp), -1, None, None)
+                file_buffer = create_buffer(char_limit)
+                files = []
+                for i in range(count):
+                    func_DragQueryFile(typ(wp), i, file_buffer, sizeof(file_buffer))
+                    drop_name = file_buffer.value.decode("utf-8")
+                    files.append(drop_name)
+                func(files)
+                windll.shell32.DragFinish(typ(wp))
+
+            return windll.user32.CallWindowProcW(
+                *map(typ, (globals()[old], hwnd, msg, wp, lp))
+            )
+
+        """ Allow upto 10 widgets only to have dnd feature in one window, reduces system uses"""
+        limit_num = 10
+        for i in range(limit_num):
+            if i + 1 == limit_num:
+                raise OverflowError("DND limit reached for this session!")
+            owp = f"old_wnd_proc_{i}"
+            if owp not in globals():
+                old, new = owp, f"new_wnd_proc_{i}"
+                break
+
+        globals()[old] = None
+        globals()[new] = prototype(py_drop_func)
+
+        windll.shell32.DragAcceptFiles(hwnd, True)
+        globals()[old] = GetWindowLong(hwnd, GWL_WND_PROC)
+        SetWindowLong(hwnd, GWL_WND_PROC, globals()[new])
+
+
+
+class Treeview(ttk.Treeview):
+    def __init__(self, parent, on_select:Callable, on_drop:Callable, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        self.bind("<<TreeviewSelect>>", self.on_row_select)
+        apply_dnd(self, on_drop)
+
+        self.on_select = on_select
+    
+    
+    def move_up(self, *args, **kwargs):
+        leaves = self.selection()
+        for i in leaves:
+            self.move(i, self.parent(i), self.index(i)-1)
+
+
+    def move_down(self, *args, **kwargs):
+        leaves = self.selection()
+        for i in reversed(leaves):
+            self.move(i, self.parent(i), self.index(i)+1)
+
+
+    def on_row_select(self, *args, **kws):
+        selected_item = self.selection()
+        if selected_item:
+            values = self.item(selected_item[0], 'values')
+            self.on_select(values)
+
 
 
 
@@ -40,8 +167,8 @@ def styling(window):
 
     style = ttk.Style()
     window.config(background="#F0F0F0")
-    style.configure('TEntry', padding=3)
-    style.configure('TCombobox', padding=3)
+    style.configure('TEntry', padding=4)
+    style.configure('TCombobox', padding=4)
     style.configure('TButton', padding=3)
     style.configure('TFrame', background=background)
     style.configure('TRadiobutton', background=background)
@@ -96,13 +223,48 @@ def validate_input(astr:str) -> bool:
     return all(char.isdigit() or char in '-, ' for char in astr)
 
 
-def get_last_chars(s):
-    if len(s) > 60:
-        return '...' + s[-60:]  # Add '...' before the last 30 characters
-    return s
+
+def pdf_split(pdf, astr_split, astr_delete, writer):
+    pages_split = parse_range(astr_split)
+    pages_split = pages_split if pages_split else range(0, len(pdf))
+    pages_delete = parse_range(astr_delete)
+    pages_selected = sorted(list(filter(lambda x: x not in pages_delete, pages_split)))
+
+    writer.import_pages(pdf, pages_selected)
+
+
+def pdf_rotate(pdf, astr_rotate, degree):
+    pages_selected = parse_range(astr_rotate)
+    list(map(lambda page_index: pdf[page_index].set_rotation(degree), pages_selected))
+
+
+def pdf_images(pdf, astr:str, zoom:int, output_dir:str):
+
+    pages_selected = parse_range(astr)
+
+    def one_page(index):
+        page = pdf[index]  # load a page
+        bitmap = page.render(
+            scale = zoom,    # 72dpi resolution
+            rotation = 0, # no additional rotation
+            # ... further rendering options
+        )
+        pil_image = bitmap.to_pil()
+        pil_image.save(Path(output_dir,  f"page-{index+1}.png"))
+
+    list(map(lambda index: one_page(index), pages_selected))
+
+
+def images_pdfs(images_path:list, output_path:str):
+    images = [Image.open(path) for path in images_path]
+    images[0].save(output_path, "PDF" ,resolution=100.0, save_all=True, append_images=images[1:])
 
 
 
+
+
+
+################## GUI MVC ################
 
 class Model:
     def __init__(self):
@@ -112,6 +274,8 @@ class Model:
         self.scale = tk.IntVar(value=1)
         self.degree = tk.IntVar(value=0)
         self.save_option = tk.IntVar(value=1)
+
+        self.temp_location = None
 
 
 
@@ -123,64 +287,47 @@ class App:
         self.view = View(self.parent, controler=self, model=self.model)
         self.view.setup(self, self.model)
 
-        save_location = load_settings('settings.ini')['Save']['location']
-        if save_location:
+        save_settings = load_settings('settings.ini')
+    
+        if save_settings['Save']['option']=='3':
             self.model.save_option.set(3)
-            self.view.save_label.configure(text=save_location)
-    
+            self.view.save_label.configure(text=save_settings['Save']['location'])
+            return
+        if save_settings['Save']['option'] == '2':
+            self.model.save_option.set(2)
+            return
+        else:
+            self.model.save_option.set(1)
 
-    def on_row_select(self, event, *args, **kws):
-        selected_item = self.view.treeview.selection()
-        
-        if selected_item:
-            # Get the values of the selected row
-            file_path, _ = self.view.treeview.item(selected_item[0], 'values')
-            # print("Selected Row Values:", item_values)
-            self.select_pdf(file_path)
-    
 
     def select_pdf(self, path):
         self.model.PDF = pdfium.PdfDocument(path)
-        self.view.file_info.config(text=f"Selected file: {get_last_chars(path)}\nPages: {len(self.model.PDF)}")
+        self.view.file_info.config(text=f"{os.path.basename(path)}\nPages: {len(self.model.PDF)}")
         self.show_preview()
 
 
-    def output_dir(self, src_path):
-        if self.model.save_option.get()==1:
-            output_dir = set_output_dir(src_path)
-        
-        if self.model.save_option.get()==2:
-            output_dir = filedialog.askdirectory()
-            if not output_dir: 
-                self.model.save_option.set(1)
-                output_dir = set_output_dir(src_path)
+    def get_output_path(self, src_path, is_file=True):
+        save_option = self.model.save_option.get()
 
-        if self.model.save_option.get()==3:
+        # Option 1: Default save location
+        if save_option == 1:
+            return set_output_file(src_path, 'new') if is_file else set_output_dir(src_path)
+
+        # Option 2: Ask the user for a directory
+        elif save_option == 2:
+            output_dir = None
+            while not output_dir:
+                output_dir = filedialog.askdirectory()
+            return output_dir
+
+        # Option 3: Load location from settings.ini
+        elif save_option == 3:
             save_location = load_settings('settings.ini')['Save']['location']
             output_dir = Path(save_location).joinpath('images')
             output_dir.mkdir(parents=True, exist_ok=True)
-        
-        return output_dir
-
-
-    def output_path(self, src_path):
-        if self.model.save_option.get()==1:
-            output_path = set_output_file(src_path, 'new')
-        
-        if self.model.save_option.get()==2:
-            output_path = filedialog.askdirectory()
-            if not output_path: 
-                self.model.save_option.set(1)
-                output_dir = set_output_dir(src_path)
-
-        if self.model.save_option.get()==3:
-            save_loction = load_settings('settings.ini')['Save']['location']
-            filename = os.path.basename(src_path)
-            print(f"{save_loction=}")
-            print(f"{filename=}")
-            output_dir = os.path.join(save_loction, filename)
-
-        return output_dir
+            if is_file:
+                return os.path.join(save_location, os.path.basename(src_path))
+            return output_dir
 
 
     def clear(self):
@@ -190,39 +337,11 @@ class App:
         self.view.image_entry.delete(0, 'end')
         self.view.preview_canvas.delete('picture')
         self.view.preview_canvas.update()
-        self.view.treeview.delete(*self.view.treeview.get_children())
-        self.view.file_info.config(text=f"Selected file: \nPages:")
+        self.view.treepdf.delete(*self.view.treepdf.get_children())
+        self.view.treeimage.delete(*self.view.treeimage.get_children())
+        self.view.file_info.config(text=f"Non file selected \nPages:")
 
         self.model.PDF = None
-        self.model.PATHS = []
-
-
-    def add_file(self, *args, **kws):
-        file_path = filedialog.askopenfilename(title="Select PDF File", filetypes=[("PDF files", "*.pdf")])
-        if not file_path: return
-
-        file_path = r'{}'.format(file_path) # convert to raw
-
-        self.select_pdf(file_path)
-        self.model.PATHS.append(file_path)
-        self.view.treeview.insert("", 'end', values=(file_path,len(self.model.PDF)))
-
-
-
-    def on_drop_pdfs(self, event, *args):
-        matches = re.findall(r'(?:\{(.+?)\}|([^\s]+))', event.data)
-
-        # Flatten the matches and filter out empty strings
-        paths = [item for match in matches for item in match if item]
-        print(paths)
-
-        # paths = event.data.split(', ').strip().strip("{}").split("} {")
-        # print(event.data.replace('', ))
-        # paths = event.data.replace("} {", ",").replace('{','').replace('}', '').split(',')
-        # print(paths)
-        for path in paths:
-            if path.lower().endswith('.pdf'):
-                self.tree_pdfs.insert('', 'end', values=(path,))
 
 
     def show_preview(self, event=None, astr=None):
@@ -232,8 +351,6 @@ class App:
         if page > len(self.model.PDF) : 
             raise IndexError("Failed to load page.")
         
-        print(page)
-
         self.view.preview_canvas.delete('picture')
 
         bitmap = self.model.PDF[page-1].render(scale=1, rotation=0)
@@ -245,74 +362,78 @@ class App:
 
 
     def apply(self):
+
+        if self.view.notebook.index("current") == 3: # settings tab
+            return
+    
+
+        if self.view.notebook.index("current") == 2: # Convert images to pdf tab
+            paths_imgs = [self.view.treeimage.item(item)['values'][1] for item in self.view.treeimage.get_children()]
+
+            output_path = Path(self.get_output_path(paths_imgs[0]), is_file=False)
+            output_path = output_path.with_suffix('.pdf')
+            
+            images_pdfs(paths_imgs, output_path) # convert func
+
+            return
+        
+        
+        if not self.model.PDF:
+            self.view.flasher.flash_titlebar(count=3, interval=0.2)
+            return
+        
+
         writer = pdfium.PdfDocument.new()
-        writing = False
-
-        if self.view.notebook.index("current") == 0: # first tab
-            
-            if self.view.image_entry.get():
-                output_dir = self.output_dir(self.model.PATHS[-1])
-
-                pages_selected = parse_range(self.view.image_entry.get())
-                zoom = int(self.model.scale.get())
-                print(f"convert {pages_selected=} to images with {zoom=}...")
-
-                def one_page(index):
-                    page = self.model.PDF[index]  # load a page
-                    bitmap = page.render(
-                        scale = zoom,    # 72dpi resolution
-                        rotation = 0, # no additional rotation
-                        # ... further rendering options
-                    )
-                    pil_image = bitmap.to_pil()
-                    pil_image.save(Path(output_dir,  f"page-{index+1}.png"))
-
-                list(map(lambda index: one_page(index), pages_selected))
+        paths = [self.view.treepdf.item(item)['values'][0] for item in self.view.treepdf.get_children()]
+        output_path = self.get_output_path(self.model.PDF._input)
 
 
-            if self.view.rotate_entry.get():
-                output_path = self.output_path(self.model.PATHS[-1])
+        if self.view.notebook.index("current") == 0: # tools tab
+            astr_image = self.view.image_entry.get()
+            astr_rotate = self.view.rotate_entry.get()
+            astr_delete = self.view.delete_entry.get()
+            astr_split = self.view.split_entry.get()
 
-                pages_selected = parse_range(self.view.rotate_entry.get())
-                degree = int(self.model.degree.get())
-                list(map(lambda page_index: self.model.PDF[page_index].set_rotation(degree), pages_selected))
+            writing = False
+
+            if astr_image:
+                output_dir = self.get_output_path(paths[-1], is_file=False)
+                pdf_images(self.model.PDF, astr_image, int(self.model.scale.get()), output_dir)
+
+
+            if astr_rotate:
+                pdf_rotate(self.model.PDF, astr_rotate, self.model.degree.get())
                 writing = True
-                # print(f"rotating pages {pages_selected=} to {degree=}...")
-            
 
-            if self.view.split_entry.get() or self.view.delete_entry.get():
-                output_path = self.output_path(self.model.PATHS[-1])
 
-                pages_split = parse_range(self.view.split_entry.get())
-                pages_split = pages_split if pages_split else range(0, len(self.model.PDF))
-                pages_delete = parse_range(self.view.delete_entry.get())
-                pages_selected = sorted(list(filter(lambda x: x not in pages_delete, pages_split)))
-
-                writer.import_pages(self.model.PDF, pages_selected)
+            if astr_split or astr_delete:
+                pdf_split(self.model.PDF, astr_split, astr_delete, writer)
                 writing = True
-                # print(f"spliting pages {pages_selected}... ")
 
 
-            if writing:
-                writer.save(output_path)
-
+            if writing: writer.save(output_path)
+            return
 
         if self.view.notebook.index("current") == 1:
-            # print("merging...")
-            output_path = self.output_path(self.model.PATHS[0])
+            output_path = self.get_output_path(paths[0])
 
             writer = pdfium.PdfDocument.new()
             
-            for pdf_path in self.model.PATHS:
+            for pdf_path in paths:
                 writer.import_pages(
                     pdfium.PdfDocument(pdf_path)
                 )
             writer.save(output_path)
-        
+            return
 
-        # if self.view.notebook.index("current") == 2:
+            # toast = Notification(app_id="pdf tools",
+            #          title="Finish",
+            #          msg="All files merged!",
+            #          icon=Path(Path(__file__).parent.absolute()) / r'img/icon.png'
+            #         )
+            # toast.show()
 
-            
+
     def change_settings(self):
         settings = {'Save': {'option': self.model.save_option.get(), 'location': ''},}
         if self.model.save_option.get() == 3:
@@ -331,12 +452,15 @@ class App:
 
 
 
+
 class View:
     def __init__(self, parent, controler, model):
         self.parent = parent
         self.controler = controler
         self.model = model
         self.validate_cmd = parent.register(validate_input)
+
+        self.flasher = TitlebarFlasher(parent)
 
 
     def setup(self, controler, model):
@@ -348,12 +472,13 @@ class View:
 
         self.notebook.add(self.tab_tools(), text=" Tools ")
         self.notebook.add(self.tab_merge(), text=" Merge ")
+        self.notebook.add(self.tab_convert(), text=" Convert ")
         self.notebook.add(self.tab_settings(), text=" Settings ")
 
         ttk.Button(self.parent, text="Apply", command=self.controler.apply).pack(side="right", padx=15, pady=(5,20), ipadx=10)
         ttk.Button(self.parent, text="clear", command=self.controler.clear).pack(side="right", padx=5, pady=(5,20))
 
-        self.file_info = tk.Label(self.parent, text=f"Selected file: \nPages: ", fg="gray", bg="#F0F0F0", justify='left', anchor='nw', wraplength=500)
+        self.file_info = tk.Label(self.parent, text=f"No file selected \nPages: ", fg="gray", bg="#F0F0F0", justify='left', anchor='nw', wraplength=600)
         self.file_info.pack(side="left", padx=20, pady=(5,20), anchor='nw', fill='x', expand=True)
         
     
@@ -391,13 +516,14 @@ class View:
 
 
         self.preview_canvas = tk.Canvas(frame_right, width=400, height=520, bg="white", highlightthickness=1, highlightcolor='black')
-        self.preview_canvas.bind('<Button-1>', self.controler.add_file)
+        self.preview_canvas.bind('<Button-1>', self.add_pdf)
         self.preview_canvas.bind("<Enter>", lambda event: self.preview_canvas.config(bg="#f0f0f0"))
         self.preview_canvas.bind("<Leave>", lambda event: self.preview_canvas.config(bg="white"))
 
 
         self.preview_canvas.create_rectangle(30, 30, 370, 490, outline='gray', width=1,dash=(5, 5))
         self.preview_canvas.create_text(200, 250, text="click or drag file here",font=("Segoe UI", 12, 'italic'), fill="gray")
+        apply_dnd(self.preview_canvas, self.on_drop_pdf)
 
         
 
@@ -432,56 +558,74 @@ class View:
 
 
     def tab_merge(self):
-        tab_merge = ttk.Frame(self.parent)
+        tab = ttk.Frame(self.parent)
 
-        _ = ttk.Frame(tab_merge)
+        ttk.Label(tab, text="Description").pack(fill='x', padx=10, pady=20)
 
-        ttk.Button(_, text="Add file", command=self.controler.add_file).pack(padx=10, pady=10, anchor='nw', side='left')
-        ttk.Button(_, text="Up", command=self.move_up).pack(padx=10, pady=10, anchor='nw', side='right')
-        ttk.Button(_, text="Down", command=self.move_down).pack(padx=10, pady=10, anchor='nw', side='right')
-
+        _ = ttk.Frame(tab)
         _.pack(fill='x')
+
+
+        def on_select(values):
+            path, _ = values
+            self.controler.select_pdf(path)
+
         
-        self.treeview = ttk.Treeview(tab_merge, columns=("A", "B"), show='headings')
-        self.treeview.column("# 1", stretch='yes')
-        self.treeview.heading("# 1", text="path", anchor='w')
-        self.treeview.column("# 2",anchor='e', stretch='no', width=80)
-        self.treeview.heading("# 2", text="pages")
+        self.treepdf = Treeview(tab, on_select=on_select, on_drop=self.on_drop_pdf, columns=("A", "B"), show='headings')
+        self.treepdf.column("# 1", stretch='yes')
+        self.treepdf.heading("# 1", text="path", anchor='w')
+        self.treepdf.column("# 2",anchor='e', stretch='no', width=80)
+        self.treepdf.heading("# 2", text="pages")
 
-        self.treeview.bind("<<TreeviewSelect>>", self.controler.on_row_select)
-   
+        ttk.Button(_, text="Add file", command=self.add_pdf).pack(padx=10, pady=10, anchor='nw', side='left')
+        ttk.Button(_, text="Up", command=self.treepdf.move_up).pack(padx=10, pady=10, anchor='nw', side='right')
+        ttk.Button(_, text="Down", command=self.treepdf.move_down).pack(padx=10, pady=10, anchor='nw', side='right')
 
-        self.treeview.pack(fill='both', expand=True, anchor='nw', padx=10, pady=10)
+        self.treepdf.pack(fill='both', expand=True, anchor='nw', padx=10, pady=10)
         
-
-        return tab_merge
-
-    def move_up(self):
-        leaves = self.treeview.selection()
-        for i in leaves:
-            self.treeview.move(i, self.treeview.parent(i), self.treeview.index(i)-1)
+        return tab
 
 
+    def tab_convert(self):
+        tab = ttk.Frame(self.parent)
+        ttk.Label(tab, text="Description").pack(fill='x', padx=10, pady=20)
 
-    def move_down(self):
-        leaves = self.treeview.selection()
-        for i in reversed(leaves):
-            self.treeview.move(i, self.treeview.parent(i), self.treeview.index(i)+1)
+        _ = ttk.Frame(tab)
+        _.pack(fill='x')
+
+        def on_select(value):
+            filename , path = value
+            print("Show preview of image: ", filename)
+        
+        self.treeimage = Treeview(tab, on_select=on_select, on_drop=self.on_drop_img, columns=("A", "B"), show='headings')
+        self.treeimage.column("# 1",anchor='w', stretch='no', width=200)
+        self.treeimage.heading("# 1", text="filename")
+        self.treeimage.column("# 2", stretch='yes')
+        self.treeimage.heading("# 2", text="path", anchor='w')
+
+        ttk.Button(_, text="Add file", command=self.add_pdf).pack(padx=10, pady=10, anchor='nw', side='left')
+        ttk.Button(_, text="Up", command=self.treeimage.move_up).pack(padx=10, pady=10, anchor='nw', side='right')
+        ttk.Button(_, text="Down", command=self.treeimage.move_down).pack(padx=10, pady=10, anchor='nw', side='right')
+
+        self.treeimage.pack(fill='both', expand=True, padx=10, pady=10)
+
+        return tab
+
 
     def tab_settings(self):
         tab = ttk.Frame(self.parent)
 
         save_group = ttk.LabelFrame(tab, text="Save Location")
         save_group.pack(fill='x', padx=15, pady=10)
-        ttk.Radiobutton(save_group, text="in same location of origin file", variable=self.model.save_option).pack(fill='x', pady=3)
-        ttk.Radiobutton(save_group, text="ask every time", variable=self.model.save_option, value=2).pack(fill='x', pady=3)
+        ttk.Radiobutton(save_group, text="in same location of origin file", variable=self.model.save_option , command=self.controler.change_settings).pack(fill='x', pady=3)
+        ttk.Radiobutton(save_group, text="ask every time", variable=self.model.save_option, value=2, command=self.controler.change_settings).pack(fill='x', pady=3)
         ttk.Radiobutton(save_group, text="in this location: ", variable=self.model.save_option, value=3, command=self.controler.change_settings).pack(fill='x')
 
         self.save_label = tk.Label(save_group, text="", fg="gray", justify='left',  bg="#FDFDFD", anchor='nw', wraplength=600)
         self.save_label.pack(fill='x', padx=(40, 0), anchor='nw', expand=True)
 
         _ = ttk.Frame(tab)
-        ttk.Label(_, text="PDF tools v3.6", font=('default', 12, 'bold')).pack(pady=(68, 12))
+        ttk.Label(_, text="PDF tools v4.0", font=('default', 12, 'bold')).pack(pady=(68, 12))
         ttk.Button(_, text="check update", state='disabled').pack(padx=10, pady=12, ipadx=4)
         ttk.Label(_, text="https://github.com/youssefhoummad/pdf-tools/", foreground="dodgerblue1").pack(pady=10)
         ttk.Label(_, text="Copyrigth © youssef hoummad, All rights reserved", foreground="gray").pack()
@@ -490,19 +634,40 @@ class View:
         return tab
 
 
+    def add_pdf(self, *args, **kws):
+        path = filedialog.askopenfilename(title="Select PDF File", filetypes=[("PDF files", "*.pdf")])
+        if not path: return
+
+        path = r'{}'.format(path) # convert to raw
+
+        self.controler.select_pdf(path)
+        self.treepdf.insert("", 'end', values=(path,len(self.model.PDF)))
+
+
+    def on_drop_pdf(self, event, *args):
+        for path in event:
+            if path.lower().endswith('.pdf'):
+                self.controler.select_pdf(path)
+                self.treepdf.insert("", 'end', values=(path,len(self.model.PDF)))
+
+
+    def on_drop_img(self, event, *args, **kws):
+        for path in event:
+            if path.lower().endswith(('.jpg', '.jpeg', '.png')):
+                self.treeimage.insert("", 'end', values=(os.path.basename(path), path))
+
+
 
 
 if __name__ == '__main__':
     # multiprocessing.freeze_support() # for multiprecessing in windows	
     myappid = 'youssefhoummad.pdftools.4.0' # arbitrary string
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid) # show icon in taskbar
+    windll.shcore.SetProcessDpiAwareness(1)
 
     window = tk.Tk()
-    # window = TkinterDnD.Tk()
-
+    
     window.iconbitmap(r'img/icon.ico')
-
 
     window.title('pdftools')
     styling(window)
