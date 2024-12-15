@@ -173,6 +173,7 @@ def styling(window):
     style.configure('TFrame', background=background)
     style.configure('TRadiobutton', background=background)
     style.configure('TLabel', background=background)
+    style.configure('Desc.TLabel', background=background, foreground="gray", font='italic')
     style.configure('TScale', background=background)
     style.configure('TLabelframe', padding=6, background=background)
     style.configure('Content.TLabelframe', padding=6, background=background)
@@ -215,13 +216,14 @@ def parse_range(astr:str)-> list[int]:
     return sorted(result)
 
 
-def validate_input(astr:str) -> bool:
+def validate_input(astr:str) -> bool: # add arg=max:int
     if astr[-2:] in ['  ', '--', ',,', '-,', ',-']:
         return False
     if astr[-3:] in ['- -', ', ,', '- ,', ', -']:
         return False
+    
+    # if last digit > max: return False
     return all(char.isdigit() or char in '-, ' for char in astr)
-
 
 
 def pdf_split(pdf, astr_split, astr_delete, writer):
@@ -276,6 +278,7 @@ class Model:
         self.save_option = tk.IntVar(value=1)
 
         self.temp_location = None
+
 
 
 
@@ -560,7 +563,7 @@ class View:
     def tab_merge(self):
         tab = ttk.Frame(self.parent)
 
-        ttk.Label(tab, text="Description").pack(fill='x', padx=10, pady=20)
+        ttk.Label(tab, foreground ='gray', font=('Segoe UI', 10, 'italic') , text="PDF Merger: A user-friendly tool that allows you to easily combine multiple PDF files into a single document. \nDrag and drop your PDF files, rearrange them as needed.").pack(fill='x', padx=10, pady=20)
 
         _ = ttk.Frame(tab)
         _.pack(fill='x')
@@ -588,7 +591,7 @@ class View:
 
     def tab_convert(self):
         tab = ttk.Frame(self.parent)
-        ttk.Label(tab, text="Description").pack(fill='x', padx=10, pady=20)
+        ttk.Label(tab, foreground ='gray', font=('Segoe UI', 10, 'italic'), text="Image to PDF Converter: A user-friendly tool that allows you to easily convert and combine multiple images \ninto a single, high-quality PDF file with drag-and-drop functionality.").pack(fill='x', padx=10, pady=20)
 
         _ = ttk.Frame(tab)
         _.pack(fill='x')
@@ -618,8 +621,8 @@ class View:
         save_group = ttk.LabelFrame(tab, text="Save Location")
         save_group.pack(fill='x', padx=15, pady=10)
         ttk.Radiobutton(save_group, text="in same location of origin file", variable=self.model.save_option , command=self.controler.change_settings).pack(fill='x', pady=3)
-        ttk.Radiobutton(save_group, text="ask every time", variable=self.model.save_option, value=2, command=self.controler.change_settings).pack(fill='x', pady=3)
-        ttk.Radiobutton(save_group, text="in this location: ", variable=self.model.save_option, value=3, command=self.controler.change_settings).pack(fill='x')
+        ttk.Radiobutton(save_group, text="ask every time", variable=self.model.save_option, value=2, command=self.controler.change_settings).pack(fill='x', pady=6)
+        ttk.Radiobutton(save_group, text="in this location: ", variable=self.model.save_option, value=3, command=self.controler.change_settings).pack(fill='x', pady=3)
 
         self.save_label = tk.Label(save_group, text="", fg="gray", justify='left',  bg="#FDFDFD", anchor='nw', wraplength=600)
         self.save_label.pack(fill='x', padx=(40, 0), anchor='nw', expand=True)
