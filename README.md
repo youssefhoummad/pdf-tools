@@ -7,13 +7,10 @@
 - Add possibilty to preview.
 - Fixed bugs.
 
-### Whats new in PDF-Tools
-- Support windows 11 notifications: **Click** on the notification to open the output file.
-
 ### All functionality :
 - Split the file between two pages.
 - Merge two files into one file.
-- Extract all images from pdf.
+- Rotate PDF
 - Convert pdf to images.
 
 ### Download
