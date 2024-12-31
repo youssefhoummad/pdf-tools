@@ -2,6 +2,7 @@ import configparser
 import ctypes
 from pathlib import Path
 import sys
+import tkinter as tk
 from tkinter import ttk
 from typing import Callable
 
@@ -106,41 +107,6 @@ class apply_dnd():
         SetWindowLong(hwnd, GWL_WND_PROC, globals()[new])
 
 
-
-
-class Treeview(ttk.Treeview):
-    def __init__(self, parent, on_select:Callable, on_drop:Callable, *args, **kwargs):
-        super().__init__(parent, *args, **kwargs)
-        self.bind("<<TreeviewSelect>>", self.on_row_select)
-        apply_dnd(self, on_drop)
-
-        self.on_select = on_select
-    
-    
-    def move_up(self, *args, **kwargs):
-        leaves = self.selection()
-        for i in leaves:
-            self.move(i, self.parent(i), self.index(i)-1)
-
-
-    def move_down(self, *args, **kwargs):
-        leaves = self.selection()
-        for i in reversed(leaves):
-            self.move(i, self.parent(i), self.index(i)+1)
-    
-
-    def remove_item(self, *args, **kwargs):
-        leaves = self.selection()
-        if leaves:
-            self.delete(leaves[0])
-
-
-
-    def on_row_select(self, *args, **kws):
-        selected_item = self.selection()
-        if selected_item:
-            values = self.item(selected_item[0], 'values')
-            self.on_select(values)
 
 
 

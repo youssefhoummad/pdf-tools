@@ -10,94 +10,20 @@ from PIL import ImageTk
 import sv_ttk
 import darkdetect
 import pywinstyles
-from funcs import *
-
-
 import pypdfium2 as pdfium
 
+from funcs import *
+from widgets import *
 
-
-class Entry(ttk.Entry):
-    def __init__(self, master=None, placeholder="", **kwargs):
-        super().__init__(master, **kwargs)
-        self.placeholder = placeholder
-        super().insert(0, placeholder)
-
-        # Bind events for removing and adding placeholder
-        self.bind("<FocusIn>", self.remove_placeholder)
-        self.bind("<FocusOut>", self.add_placeholder)
-        self.bind("<KeyRelease>", self.check_empty)
-
-
-
-    def configure(self, *args, **kwargs):
-        if kwargs.get("state") == "enable":
-            super().config(state="enable")
-            self.add_placeholder(None)
-
-        if kwargs.get("state") == "disable":
-            super().delete(0, tk.END)
-            self.state(["!invalid"])
-            super().config(state="disable")
-
-
-    config = configure
-
-
-
-    def validate_int(self, *_):
-        """
-        This method invalidates the entry if its content is not an integer
-        """
-        if validate_input(self.get()):
-            self.state(["!invalid"])
-        else:
-            self.state(["invalid"])
-
- 
-
-    def remove_placeholder(self, event):
-        """Remove placeholder text when the user clicks into the entry field."""
-
-        color = self.tk.call("ttk::style", "lookup", "TEntry", "-foreground")
-        if super().get() == self.placeholder:
-            super().configure(foreground=color)
-            self.delete(0, tk.END)
-        
-        self.validate_int()
-
-    def add_placeholder(self, event):
-        """Add placeholder text back if the entry is empty."""
-        # self.bind("<FocusOut>", self.validate_int)
-
-        if super().get() == "":
-            super().configure(foreground='gray')
-            self.insert(0, self.placeholder)
-
-    def check_empty(self, event):
-        """Check if the entry is empty and handle placeholder."""
-        self.bind("<KeyRelease>", self.validate_int)
-
-        if super().get() == "":
-            self.add_placeholder(event)
-        
-        if super().get() == self.placeholder:
-            self.remove_placeholder(event)
-    
-    def get(self):
-        if super().get() == self.placeholder:
-            return ""
-        return super().get()
-        
 
 
 
 class GroupFrame(ttk.Frame):
-    def __init__(self, parent, title, disc="Some  Description...", zoom=False, degree=False, *args,**kws):
+    def __init__(self, parent, title, on_entry_change=None, zoom=False, degree=False, *args,**kws):
         super().__init__(parent, *args, **kws)
 
         self._enable = False
-
+        self.on_entry_change = on_entry_change
 
         self.top_frame = ttk.Frame(self)
         self.top_frame.pack(fill='x', expand=True, pady=2)
@@ -105,61 +31,57 @@ class GroupFrame(ttk.Frame):
         self.title = ttk.Label(self.top_frame, text=title, font=('Segoe UI', 10, 'bold' ), foreground='gray')
         self.title.pack(side='left', fill='x')
 
-        self.swich = ttk.Checkbutton(self.top_frame, text="", style="Switch.TCheckbutton", command=self.toggle)
+        self.swich = ttk.Checkbutton(self.top_frame, text="", style="Switch.TCheckbutton", command=self._toggle)
         self.swich.pack(side='right', fill='x')    
-
-        self.desc = ttk.Label(self, text=disc, foreground="gray")
-        # self.desc.pack(fill='x', expand=True, pady=(0,6))
 
         self.entry = Entry(self, placeholder="Example: 1, 2, 6-12", state='disable')
         self.entry.pack(fill='x', expand=True)
+        self.entry.bind("<KeyRelease>", self._cmd_on_change)
 
+        zoom_container = ttk.Frame(self)
+        self.label_zoom = ttk.Label(zoom_container, text=f"Zoom 1:", foreground="gray")
+        self.scale_zoom = ttk.Scale(zoom_container, from_=1, to=8, orient='horizontal', state='disable', command=self._sync_zoom)
 
-        self.label_zoom = ttk.Label(self, text="Zoom level:", foreground="gray")
-        self.scale_zoom = ttk.Scale(self, from_=1, to=8, state='disable')
-
-        self.rotate_label = ttk.Label(self, text="Rotate direction:", foreground="gray")
-        self.rotate_combobox = ttk.Combobox(self, values=[0, 90, 180, 270], state='disable')
-        self.rotate_combobox.current(0)
-
-
+        self.rotate_combobox = Combobox(self, placeholder='Choose direction...', values=[90, 180, 270], foreground="gray")
+        self.rotate_combobox.config(state='disable')
+  
 
         if zoom:
-            self.label_zoom.pack(fill='x', expand=True, pady=(12,6), padx=2)
-            self.scale_zoom.pack(fill='x', expand=True)
+            self.label_zoom.pack(side='left', padx=(0,6))
+            self.scale_zoom.pack(fill='x', expand=True, side='left')
+            zoom_container.pack(fill='x', expand=True, pady=(12,6))
 
         if degree:
-            self.rotate_label.pack(fill='x', expand=True, pady=(12,6), padx=2)
-            self.rotate_combobox.pack(fill='x', expand=True)
-
-
+            # self.rotate_label.pack(fill='x', expand=True, pady=(12,6), padx=2)
+            self.rotate_combobox.pack(fill='x', expand=True, pady=(12,6))
     
-    def toggle(self):
+
+    def _cmd_on_change(self, *_):
+        if self.on_entry_change:
+            self.on_entry_change(astr=self.entry.get())
+        
+
+    def _sync_zoom(self, *_):
+        self.label_zoom.config(text=f'Zoom {int(self.scale_zoom.get())}:')
+
+
+    def _toggle(self):
         self._enable = not self._enable
         color = self.tk.call("ttk::style", "lookup", "TLabel", "-foreground")
+        state = 'enable'
 
-        if self._enable:
-            self.title.configure(foreground=color)
+        if not self._enable:
+            state = 'disable'
+            color = 'gray'
 
-            self.entry.configure(state='enable')
-            self.desc.configure(foreground=color)
+        self.title.configure(foreground=color)
+        # self.desc.configure(foreground=color)
 
-            self.scale_zoom.configure(state='enable')
-            self.rotate_label.configure(foreground=color)
+        self.entry.configure(state=state)
+        self.scale_zoom.configure(state=state)
+        self.label_zoom.config(foreground=color)
+        self.rotate_combobox.configure(state=state)
 
-            self.rotate_combobox.configure(state='enable')
-            self.rotate_label.configure(foreground=color)
-
-        else:
-            self.title.configure(foreground='gray')
-            self.entry.configure(state='disable')
-            self.desc.configure(foreground='gray')
-
-            self.label_zoom.configure(foreground='gray')
-            self.scale_zoom.configure(state='disable')
-            
-            self.rotate_label.configure(foreground='gray')
-            self.rotate_combobox.configure(state='disable')
 
     @property
     def enable(self):
@@ -170,20 +92,24 @@ class GroupFrame(ttk.Frame):
     def astr(self):
         return self.entry.get()
     
+
     @property
     def pages(self):
         return parse_range(self.entry.get())
     
     @property
+    def last_entry(self):
+        return self.pages[-1]
+
+    @property
     def degree(self):
         return self.rotate_combobox.get()
 
+
     @property
     def zoom(self):
-        self.scale_zoom.get()
-        ...
-    
-
+        return self.scale_zoom.get()
+        
 
 
 
@@ -263,7 +189,9 @@ class App:
         if not self.PDF: return
         page = 1 if not astr else int(re.findall(r'\d+', astr)[-1])
 
-        if page > len(self.PDF) : 
+        if page > len(self.PDF) :
+            # InfoBar(self.parent, info_type="warning", title="Warning", text=f"pages must be between 1 and {len(self.PDF)}").show()
+            # return
             raise IndexError("Failed to load page.")
         
         self.view.preview_canvas.delete('picture')
@@ -280,9 +208,8 @@ class App:
 
         if self.view.notebook.index("current") == 3: # settings tab
             settings = {'Save': {'option': self.save_option.get(), 'location': self.view.save_label.cget("text"), 'theme': self.theme.get()}}
-            print(settings)
             save_settings('settings.ini', settings)
-            print("Settings saved!")
+            # InfoBar(self.parent, title="success", text="All settings saved :)").show()
             return
     
 
@@ -363,6 +290,7 @@ class App:
 
 
 
+
 class View:
     def __init__(self, parent, controler):
         self.parent = parent
@@ -405,18 +333,17 @@ class View:
         frame_right = ttk.Frame(tab_tools)
         frame_bottom = ttk.Frame(tab_tools)
 
-        self.split = GroupFrame(frame_left, title="Split")
+        self.split = GroupFrame(frame_left, title="Split", on_entry_change=self.app.show_preview)
         self.split.pack(fill='x', expand=True, pady=12)
 
-        self.delete = GroupFrame(frame_left, title="Delete")
+        self.delete = GroupFrame(frame_left, title="Delete", on_entry_change=self.app.show_preview)
         self.delete.pack(fill='x', expand=True, pady=12)
 
-        self.rotate = GroupFrame(frame_left, title="Rotate", degree=True)
+        self.rotate = GroupFrame(frame_left, title="Rotate", degree=True, on_entry_change=self.app.show_preview)
         self.rotate.pack(fill='x', expand=True, pady=12)
 
-        self.images = GroupFrame(frame_left, title="Images", zoom=True)
+        self.images = GroupFrame(frame_left, title="Images", zoom=True, on_entry_change=self.app.show_preview)
         self.images.pack(fill='x', expand=True, pady=12)
- 
 
         self.preview_canvas = tk.Canvas(frame_right, width=self.canvas_width, height=self.canvas_height, bg="white", highlightthickness=1, highlightcolor='black')
         self.preview_canvas.bind('<Button-1>', self.add_pdf)
@@ -601,7 +528,9 @@ class View:
 
     def on_resize(self, *_):
         print(f"resizing...{self.parent.winfo_height()}")
-    
+
+
+
 
 if __name__ == '__main__':
     # multiprocessing.freeze_support() # for multiprecessing in windows	
