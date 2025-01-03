@@ -2,7 +2,8 @@ import re
 import sys
 import tkinter as tk
 from tkinter import ttk, filedialog
-# from tkinter import font
+
+from widgets import Combobox, Treeview, Entry, apply_dnd, InfoBar, Pivot
 
 sys.path.append('./libs') # pip install --target=./libs -r requirements.txt
 
@@ -13,14 +14,16 @@ import pywinstyles
 import pypdfium2 as pdfium
 
 from funcs import *
-from widgets import *
 
 
 
 
 class GroupFrame(ttk.Frame):
+
     def __init__(self, parent, title, on_entry_change=None, zoom=False, degree=False, *args,**kws):
         super().__init__(parent, *args, **kws)
+
+        # self.validate_cmd = parent.register(validate_input)
 
         self._enable = False
         self.on_entry_change = on_entry_change
@@ -34,9 +37,9 @@ class GroupFrame(ttk.Frame):
         self.swich = ttk.Checkbutton(self.top_frame, text="", style="Switch.TCheckbutton", command=self._toggle)
         self.swich.pack(side='right', fill='x')    
 
-        self.entry = Entry(self, placeholder="Example: 1, 2, 6-12", state='disable')
+        self.entry = Entry(self, placeholder="Example: 1, 2, 6-12", state='disable', validator=validate_input)
         self.entry.pack(fill='x', expand=True)
-        self.entry.bind("<KeyRelease>", self._cmd_on_change)
+        self.entry.bind("<KeyRelease>", self._cmd_on_change, add="+") # Add a <KeyRelease> event binding without overriding existing bindings
 
         zoom_container = ttk.Frame(self)
         self.label_zoom = ttk.Label(zoom_container, text=f"Zoom 1:", foreground="gray")
@@ -52,7 +55,6 @@ class GroupFrame(ttk.Frame):
             zoom_container.pack(fill='x', expand=True, pady=(12,6))
 
         if degree:
-            # self.rotate_label.pack(fill='x', expand=True, pady=(12,6), padx=2)
             self.rotate_combobox.pack(fill='x', expand=True, pady=(12,6))
     
 
@@ -127,6 +129,7 @@ class App:
         self.view = View(self.parent, controler=self)
         self.view.setup(self)
         self.get_settings()
+        
 
 
     def get_settings(self):
@@ -209,7 +212,7 @@ class App:
         if self.view.notebook.index("current") == 3: # settings tab
             settings = {'Save': {'option': self.save_option.get(), 'location': self.view.save_label.cget("text"), 'theme': self.theme.get()}}
             save_settings('settings.ini', settings)
-            # InfoBar(self.parent, title="success", text="All settings saved :)").show()
+            InfoBar(self.parent, title="success", text="All settings saved :)").show()
             return
     
 
@@ -294,12 +297,7 @@ class App:
 class View:
     def __init__(self, parent, controler):
         self.parent = parent
-
         self.app = controler
-        self.validate_cmd = parent.register(validate_input)
-
-        self.flasher = TitlebarFlasher(parent)
-
 
     def setup(self, controler):
         self.app = controler
@@ -307,14 +305,22 @@ class View:
         self.canvas_height = 520
         self.canvas_width= 400
 
-
-        self.notebook = ttk.Notebook(self.parent)
+        self.notebook = Pivot(self.parent)
         self.notebook.pack(expand=True, fill='both', padx=16)
 
-        self.notebook.add(self.tab_tools(), text=" Tools ")
-        self.notebook.add(self.tab_merge(), text=" Merge ")
-        self.notebook.add(self.tab_convert(), text=" Convert ")
-        self.notebook.add(self.tab_settings(), text=" Settings ")
+        self.notebook.add(self.tab_tools(), text="Tools", icon=u'\uec7a')
+        self.notebook.add(self.tab_merge(), text="Merge PDFs", icon=u'\uea90')
+        self.notebook.add(self.tab_convert(), text="Images to PDF", icon=u'\ue7aa')
+        self.notebook.add(self.tab_settings(), '', icon=u'\ue713', to_end=True)
+        self.notebook.select(0)
+
+        # self.notebook = ttk.Notebook(self.parent)
+        # self.notebook.pack(expand=True, fill='both', padx=16)
+
+        # self.notebook.add(self.tab_tools(), text=" Tools ")
+        # self.notebook.add(self.tab_merge(), text=" Merge ")
+        # self.notebook.add(self.tab_convert(), text=" Convert ")
+        # self.notebook.add(self.tab_settings(), text=" Settings ")
 
         ttk.Button(self.parent, text="Apply", command=self.app.apply, style = "Accent.TButton").pack(side="right", padx=22, pady=22, ipadx=30)
         ttk.Button(self.parent, text="clear", command=self.app.clear).pack(side="right", padx=5, pady=22, ipadx=20)
@@ -373,13 +379,12 @@ class View:
         _ = ttk.Frame(tab)
         _.pack(fill='x')
 
-
         def on_select(values):
             path, _ = values
             self.app.select_pdf(path)
-
         
-        self.treepdf = Treeview(tab, on_select=on_select, on_drop=self.on_drop_pdf, columns=("A", "B"), show='headings')
+        self.treepdf = Treeview(tab, on_select=on_select, columns=("A", "B"), show='headings')
+        apply_dnd(self.treepdf, self.on_drop_pdf) # on_drop=self.on_drop_pdf,
         self.treepdf.column("# 1", stretch='yes')
         self.treepdf.heading("# 1", text="path", anchor='w')
         self.treepdf.column("# 2",anchor='e', stretch='no', width=80)
@@ -407,7 +412,8 @@ class View:
             filename , path = value
             print("Show preview of image: ", filename)
         
-        self.treeimage = Treeview(tab, on_select=on_select, on_drop=self.on_drop_img, columns=("A", "B"), show='headings')
+        self.treeimage = Treeview(tab, on_select=on_select, columns=("A", "B"), show='headings')
+        apply_dnd(self.treeimage, self.on_drop_img)
         self.treeimage.column("# 1",anchor='w', stretch='no', width=200)
         self.treeimage.heading("# 1", text="filename")
         self.treeimage.column("# 2", stretch='yes')
@@ -532,6 +538,8 @@ class View:
 
 
 
+
+
 if __name__ == '__main__':
     # multiprocessing.freeze_support() # for multiprecessing in windows	
 
@@ -539,9 +547,11 @@ if __name__ == '__main__':
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
     window = tk.Tk()
+    window.geometry("700x700")
 
     window.iconbitmap(r'img/icon.ico')
     window.title('pdftools')
+    # styling_tkinter(window)
 
     app = App(window, View)    
     app.mainloop()

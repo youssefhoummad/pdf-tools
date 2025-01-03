@@ -2,9 +2,7 @@ import configparser
 import ctypes
 from pathlib import Path
 import sys
-import tkinter as tk
 from tkinter import ttk
-from typing import Callable
 
 
 sys.path.append('./libs') # pip install --target=./libs -r requirements.txt
@@ -13,102 +11,40 @@ from PIL import Image
 
 
 
-class TitlebarFlasher:
-    def __init__(self, master):
-        self.master = master
-        # Get the window handle
-        self.hwnd = ctypes.windll.user32.GetForegroundWindow()
+def flash_titlebar(master, count=3, interval=0.5):
+    """
+    Flash the titlebar using Win32 API
     
-    def flash_titlebar(self, count=3, interval=0.5):
-        """
-        Flash the titlebar using Win32 API
-        
-        :param count: Number of times to flash
-        :param interval: Time between flashes (in seconds)
-        """
-        # FLASHW_ALL: Flash both the window caption and taskbar button
-        # FLASHW_TIMER: Flash continuously
-        FLASHW_ALL = 0x00000003
-        FLASHW_STOP = 0
-        
-        # Struct to pass flash parameters
-        class FLASHWINFO(ctypes.Structure):
-            _fields_ = [
-                ('cbSize', ctypes.c_uint),
-                ('hwnd', ctypes.c_void_p),
-                ('dwFlags', ctypes.c_uint),
-                ('uCount', ctypes.c_uint),
-                ('dwTimeout', ctypes.c_uint)
-            ]
-        
-        # Create flash info structure
-        flash_info = FLASHWINFO()
-        flash_info.cbSize = ctypes.sizeof(flash_info)
-        flash_info.hwnd = self.hwnd
-        flash_info.dwFlags = FLASHW_ALL
-        flash_info.uCount = count
-        flash_info.dwTimeout = int(interval * 1000)  # Convert to milliseconds
-        
-        # Call the FlashWindowEx function
-        ctypes.windll.user32.FlashWindowEx(ctypes.byref(flash_info))
+    :param master: Tkinter master or any GUI window reference (used to identify the handle)
+    :param count: Number of times to flash
+    :param interval: Time between flashes (in seconds)
+    """
+    # Get the window handle
+    hwnd = ctypes.windll.user32.GetForegroundWindow()
 
+    # FLASHW_ALL: Flash both the window caption and taskbar button
+    FLASHW_ALL = 0x00000003
 
-
-
-class apply_dnd():
-    """apply file drag and drop in a widget"""
+    # Struct to pass flash parameters
+    class FLASHWINFO(ctypes.Structure):
+        _fields_ = [
+            ('cbSize', ctypes.c_uint),
+            ('hwnd', ctypes.c_void_p),
+            ('dwFlags', ctypes.c_uint),
+            ('uCount', ctypes.c_uint),
+            ('dwTimeout', ctypes.c_uint)
+        ]
     
-    def __init__(self, widget: int, func: Callable, char_limit: int=260) -> None:
-
-        hwnd = widget.winfo_id()
-
-        GetWindowLong = ctypes.windll.user32.GetWindowLongPtrA
-        SetWindowLong = ctypes.windll.user32.SetWindowLongPtrA
-        typ = ctypes.c_uint64
-
-        prototype = ctypes.WINFUNCTYPE(typ, typ, typ, typ, typ)
-        WM_DROP_FILES = 0x233
-        GWL_WND_PROC = -4
-        create_buffer = ctypes.c_buffer
-        func_DragQueryFile = (ctypes.windll.shell32.DragQueryFile)
-
-        def py_drop_func(hwnd, msg, wp, lp):
-            global files
-            if msg == WM_DROP_FILES:
-                count = func_DragQueryFile(typ(wp), -1, None, None)
-                file_buffer = create_buffer(char_limit)
-                files = []
-                for i in range(count):
-                    func_DragQueryFile(typ(wp), i, file_buffer, ctypes.sizeof(file_buffer))
-                    drop_name = file_buffer.value.decode("utf-8")
-                    files.append(drop_name)
-                func(files)
-                ctypes.windll.shell32.DragFinish(typ(wp))
-
-            return ctypes.windll.user32.CallWindowProcW(
-                *map(typ, (globals()[old], hwnd, msg, wp, lp))
-            )
-
-        """ Allow upto 10 widgets only to have dnd feature in one window, reduces system uses"""
-        limit_num = 10
-        for i in range(limit_num):
-            if i + 1 == limit_num:
-                raise OverflowError("DND limit reached for this session!")
-            owp = f"old_wnd_proc_{i}"
-            if owp not in globals():
-                old, new = owp, f"new_wnd_proc_{i}"
-                break
-
-        globals()[old] = None
-        globals()[new] = prototype(py_drop_func)
-
-        ctypes.windll.shell32.DragAcceptFiles(hwnd, True)
-        globals()[old] = GetWindowLong(hwnd, GWL_WND_PROC)
-        SetWindowLong(hwnd, GWL_WND_PROC, globals()[new])
-
-
-
-
+    # Create flash info structure
+    flash_info = FLASHWINFO()
+    flash_info.cbSize = ctypes.sizeof(flash_info)
+    flash_info.hwnd = hwnd
+    flash_info.dwFlags = FLASHW_ALL
+    flash_info.uCount = count
+    flash_info.dwTimeout = int(interval * 1000)  # Convert to milliseconds
+    
+    # Call the FlashWindowEx function
+    ctypes.windll.user32.FlashWindowEx(ctypes.byref(flash_info))
 
 
 
@@ -150,7 +86,7 @@ def styling_svttk(window):
 
 
 def styling_tkinter(window):
-    background =  "#EFF4F9" #'#EFF4F9'
+    background =  'white'# "#EFF4F9" #'#EFF4F9'
 
     # for widget in ["Ttk", "Tk", "TLabelFrame", "TRadiobutton", "TEntry", "TButton", "TLabel", "TScale", "TNotebook", "TNotebook.Tab"]:
     #     window.option_add(f'*{widget}*direction', 'rtl')  # تعيين الاتجاه لجميع عناصر ttk
@@ -159,7 +95,7 @@ def styling_tkinter(window):
 
 
     style = ttk.Style()
-    # window.config(background="#F0F0F0")
+    window.config(background="#F0F0F0")
     style.configure('TEntry', padding=4)
     style.configure('TCombobox', padding=4)
     style.configure('TButton', padding=3)
@@ -172,10 +108,12 @@ def styling_tkinter(window):
     style.configure('Content.TLabelframe', padding=6, background=background)
     style.configure('TLabelframe.Label', font=('Segoe UI', 10, 'bold'), background=background)
     style.configure('TNotebook.Tab', padding=(15, 2), font=('Segoe UI', 9))
+    style.map("TNotebook.Tab", background=[("selected", 'red')], foreground=[("selected", "#0078d7"), ("!selected", "gray")])
+
     style.configure('Content.TLabel', font=('Segoe UI', 9))
     style.configure('Content.TButton', font=('Segoe UI', 9))
     style.configure('Content.TEntry', font=('Segoe UI', 9))
-    style.map("TNotebook.Tab", foreground=[("!selected", "gray")])
+    # style.map("TNotebook.Tab", foreground=[("!selected", "gray")])
 
 
 def set_output_file(pdf_path:str ,refain:str):
@@ -218,6 +156,10 @@ def validate_input(astr:str) -> bool: # add arg=max:int
     return all(char.isdigit() or char in '-, ' for char in astr)
 
 
+
+
+
+
 def pdf_split(pdf, astr_split, astr_delete, writer):
     pages_split = parse_range(astr_split)
     pages_split = pages_split if pages_split else range(0, len(pdf))
@@ -225,6 +167,7 @@ def pdf_split(pdf, astr_split, astr_delete, writer):
     pages_selected = sorted(list(filter(lambda x: x not in pages_delete, pages_split)))
 
     writer.import_pages(pdf, pages_selected)
+
 
 
 def pdf_rotate(pdf, astr_rotate, degree):
@@ -248,6 +191,7 @@ def pdf_images(pdf, astr:str, zoom:int, output_dir:str):
         pil_image.save(Path(output_dir,  f"page-{index+1}.png"))
 
     list(map(lambda index: one_page(index), pages_selected))
+
 
 
 def images_pdfs(images_path:list, output_path:str):
