@@ -305,22 +305,22 @@ class View:
         self.canvas_height = 520
         self.canvas_width= 400
 
-        self.notebook = Pivot(self.parent)
-        self.notebook.pack(expand=True, fill='both', padx=16)
-
-        self.notebook.add(self.tab_tools(), text="Tools", icon=u'\uec7a')
-        self.notebook.add(self.tab_merge(), text="Merge PDFs", icon=u'\uea90')
-        self.notebook.add(self.tab_convert(), text="Images to PDF", icon=u'\ue7aa')
-        self.notebook.add(self.tab_settings(), '', icon=u'\ue713', to_end=True)
-        self.notebook.select(0)
-
-        # self.notebook = ttk.Notebook(self.parent)
+        # self.notebook = Pivot(self.parent)
         # self.notebook.pack(expand=True, fill='both', padx=16)
 
-        # self.notebook.add(self.tab_tools(), text=" Tools ")
-        # self.notebook.add(self.tab_merge(), text=" Merge ")
-        # self.notebook.add(self.tab_convert(), text=" Convert ")
-        # self.notebook.add(self.tab_settings(), text=" Settings ")
+        # self.notebook.add(self.tab_tools(), text="Tools", icon=u'\uec7a')
+        # self.notebook.add(self.tab_merge(), text="Merge PDFs", icon=u'\uea90')
+        # self.notebook.add(self.tab_convert(), text="Images to PDF", icon=u'\ue7aa')
+        # self.notebook.add(self.tab_settings(), '', icon=u'\ue713', to_end=True)
+        # self.notebook.select(0)
+
+        self.notebook = ttk.Notebook(self.parent)
+        self.notebook.pack(expand=True, fill='both', padx=16)
+
+        self.notebook.add(self.tab_tools(), text="Tools")
+        self.notebook.add(self.tab_merge(), text="Merge")
+        self.notebook.add(self.tab_convert(), text="Convert")
+        self.notebook.add(self.tab_settings(), text="Settings")
 
         ttk.Button(self.parent, text="Apply", command=self.app.apply, style = "Accent.TButton").pack(side="right", padx=22, pady=22, ipadx=30)
         ttk.Button(self.parent, text="clear", command=self.app.clear).pack(side="right", padx=5, pady=22, ipadx=20)
