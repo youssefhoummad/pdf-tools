@@ -7,7 +7,7 @@ block_cipher = None
 
 a = Analysis(
     ['app.py'],
-    pathex=pathex=['.'],
+    pathex=['.'],
     binaries=[],
     datas =collect_data_files('tkinterdnd2'),
 
