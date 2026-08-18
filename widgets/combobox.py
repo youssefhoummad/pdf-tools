@@ -27,7 +27,7 @@ class Combobox(ttk.Combobox):
     """
 
     def __init__(self, container, placeholder="Select an option...", *args, **kwargs):
-        super().__init__(container, *args, **kwargs)
+        super().__init__(container, foreground='gray', *args, **kwargs)
         
         self.placeholder = placeholder
         self.placeholder_active = True
@@ -39,6 +39,7 @@ class Combobox(ttk.Combobox):
         self.bind("<FocusIn>", self._clear_placeholder)
         self.bind("<FocusOut>", self._add_placeholder)
         self.bind("<<ComboboxSelected>>", self._on_select)
+        
     
     def _clear_placeholder(self, event=None):
         if self.placeholder_active:
@@ -61,7 +62,15 @@ class Combobox(ttk.Combobox):
         if self.placeholder_active:
             return ''
         return super().get()
-    
+
+    def clear(self):
+        # super().config(foreground='gray')
+        # self.set(self.placeholder)
+        # self.placeholder_active = True
+        # if not self.get():
+        self.set(self.placeholder)
+        self.placeholder_active = True
+
 
     def configure(self, *args, **kwargs):
         if kwargs.get("state") == "enable":
@@ -74,6 +83,8 @@ class Combobox(ttk.Combobox):
         super().config(*args, **kwargs)
     
     config = configure
+
+
 
 
 

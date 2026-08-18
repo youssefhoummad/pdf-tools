@@ -1,16 +1,13 @@
 import re
-import sys
 import tkinter as tk
 from tkinter import ttk, filedialog
 
-from widgets import Combobox, Treeview, Entry, apply_dnd, InfoBar, Pivot
+from widgets import Combobox, Treeview, Entry, apply_dnd, InfoBar
 
-sys.path.append('./libs') # pip install --target=./libs -r requirements.txt
+# sys.path.append('./libs') # pip install --target=./libs -r requirements.txt
 
 from PIL import ImageTk
-import sv_ttk
-import darkdetect
-import pywinstyles
+
 import pypdfium2 as pdfium
 
 from funcs import *
@@ -23,30 +20,27 @@ class GroupFrame(ttk.Frame):
     def __init__(self, parent, title, on_entry_change=None, zoom=False, degree=False, *args,**kws):
         super().__init__(parent, *args, **kws)
 
-        # self.validate_cmd = parent.register(validate_input)
 
-        self._enable = False
         self.on_entry_change = on_entry_change
+        self.title_str = title
 
         self.top_frame = ttk.Frame(self)
         self.top_frame.pack(fill='x', expand=True, pady=2)
 
-        self.title = ttk.Label(self.top_frame, text=title, font=('Segoe UI', 10, 'bold' ), foreground='gray')
+        self.title = ttk.Label(self.top_frame, text=title, font=('Segoe UI', 10, 'bold' ))
         self.title.pack(side='left', fill='x')
 
-        self.swich = ttk.Checkbutton(self.top_frame, text="", style="Switch.TCheckbutton", command=self._toggle)
-        self.swich.pack(side='right', fill='x')    
-
-        self.entry = Entry(self, placeholder="Example: 1, 2, 6-12", state='disable', validator=validate_input)
-        self.entry.pack(fill='x', expand=True)
+        self.entry = Entry(self, placeholder="Example: 1, 2, 6-12")
+        self.entry.pack(fill='x', expand=True, ipady=1)
         self.entry.bind("<KeyRelease>", self._cmd_on_change, add="+") # Add a <KeyRelease> event binding without overriding existing bindings
+        self._debounce_id = None
 
         zoom_container = ttk.Frame(self)
-        self.label_zoom = ttk.Label(zoom_container, text=f"Zoom 1:", foreground="gray")
-        self.scale_zoom = ttk.Scale(zoom_container, from_=1, to=8, orient='horizontal', state='disable', command=self._sync_zoom)
+        self.label_zoom = ttk.Label(zoom_container, text=f"Zoom 1:")
+        self.scale_zoom = ttk.Scale(zoom_container, from_=1, to=8, orient='horizontal', command=self._sync_zoom) 
 
-        self.rotate_combobox = Combobox(self, placeholder='Choose direction...', values=[90, 180, 270], foreground="gray")
-        self.rotate_combobox.config(state='disable')
+        self.rotate_combobox = Combobox(self, placeholder='Choose direction...', values=[90, 180, 270] )
+        # self.rotate_combobox.config() 
   
 
         if zoom:
@@ -55,39 +49,29 @@ class GroupFrame(ttk.Frame):
             zoom_container.pack(fill='x', expand=True, pady=(12,6))
 
         if degree:
-            self.rotate_combobox.pack(fill='x', expand=True, pady=(12,6))
+            self.rotate_combobox.pack(fill='x', expand=True, pady=(12,6), ipadx=1)
     
 
     def _cmd_on_change(self, *_):
-        if self.on_entry_change:
-            self.on_entry_change(astr=self.entry.get())
+        if not self.on_entry_change:
+            return
+        if self._debounce_id:
+            self.after_cancel(self._debounce_id)
+        self._debounce_id = self.after(150, lambda: self.on_entry_change(astr=self.entry.get()))
         
 
     def _sync_zoom(self, *_):
         self.label_zoom.config(text=f'Zoom {int(self.scale_zoom.get())}:')
 
 
-    def _toggle(self):
-        self._enable = not self._enable
-        color = self.tk.call("ttk::style", "lookup", "TLabel", "-foreground")
-        state = 'enable'
-
-        if not self._enable:
-            state = 'disable'
-            color = 'gray'
-
-        self.title.configure(foreground=color)
-        # self.desc.configure(foreground=color)
-
-        self.entry.configure(state=state)
-        self.scale_zoom.configure(state=state)
-        self.label_zoom.config(foreground=color)
-        self.rotate_combobox.configure(state=state)
 
 
     @property
     def enable(self):
-        return self._enable
+        if self.entry.get().strip() == "":
+            # print(f"{self.title_str} is disabled")
+            return False
+        return True
 
 
     @property
@@ -140,16 +124,12 @@ class App:
         else:
             self.save_option.set(1)
         
-        if settings.get('Save', {}).get('theme') == 'dark':
-            self.view.set_dark_theme()
-        elif settings.get('Save', {}).get('theme') == 'light':
-            self.view.set_light_theme()
-        else:  
-            self.view.set_auto_theme()
+
 
 
     def select_pdf(self, path):
         self.PDF = pdfium.PdfDocument(path)
+        self._last_preview_page = None
         self.view.file_info.config(text=f"{Path(path).name}\nPages: {len(self.PDF)}")
         self.show_preview()
 
@@ -185,18 +165,24 @@ class App:
 
         self.view.file_info.config(text=f"No file selected \n")
 
-        self.PDF = None
+        if self.PDF: 
+            self.PDF.close()
+            self.PDF = None
 
 
     def show_preview(self, event=None, astr=None):
         if not self.PDF: return
-        page = 1 if not astr else int(re.findall(r'\d+', astr)[-1])
 
-        if page > len(self.PDF) :
-            # InfoBar(self.parent, info_type="warning", title="Warning", text=f"pages must be between 1 and {len(self.PDF)}").show()
-            # return
-            raise IndexError("Failed to load page.")
-        
+        digits = re.findall(r'\d+', astr) if astr else []
+        page = int(digits[-1]) if digits else 1
+        if page > len(self.PDF):
+            InfoBar(self.parent, title="Warning", info_type='warning', text=f"page must be less than {len(self.PDF)}").show()
+        page = max(1, min(page, len(self.PDF)))
+
+        if page == getattr(self, '_last_preview_page', None):
+            return
+        self._last_preview_page = page
+
         self.view.preview_canvas.delete('picture')
 
         bitmap = self.PDF[page-1].render(scale=1, rotation=0)
@@ -228,7 +214,6 @@ class App:
         
         
         if not self.PDF:
-            self.view.flasher.flash_titlebar(count=3, interval=0.2)
             return
         
 
@@ -237,6 +222,9 @@ class App:
 
 
         if self.view.notebook.index("current") == 0: # tools tab
+            if not self.view.images.enable and not self.view.split.enable and not self.view.rotate.enable and not self.view.delete.enable:
+                return
+
             rotated = False
             splited = False
 
@@ -246,6 +234,9 @@ class App:
 
 
             if self.view.rotate:
+                if self.view.rotate.rotate_combobox.get() == "":
+                    # print("NO DEGREE CHOOSEN")
+                    return False
                 output_path = self.get_output_path(self.PDF._input)
                 pdf_rotate(self.PDF, self.view.rotate.astr, self.view.rotate.degree)
                 rotated = True
@@ -260,10 +251,15 @@ class App:
 
             if splited: 
                 writer.save(output_path)
+                InfoBar(self.parent, title="success", text=f"The new PDF saved in: \n {output_path})").show()
+
                 return
             if rotated:
                 self.PDF.save(output_path)
+                # InfoBar(self.parent, title="success", text="All settings saved :)").show()
+
                 return
+            
 
         if self.view.notebook.index("current") == 1:
             if not paths: return
@@ -276,14 +272,11 @@ class App:
                     pdfium.PdfDocument(pdf_path)
                 )
             writer.save(output_path)
+
+            InfoBar(self.parent, title="success", text=f"All files merged in:\n {output_path}").show()
             return
 
-            # toast = Notification(app_id="pdf tools",
-            #          title="Finish",
-            #          msg="All files merged!",
-            #          icon=Path(Path(__file__).parent.absolute()) / r'img/icon.png'
-            #         )
-            # toast.show()
+
 
 
 
@@ -305,25 +298,16 @@ class View:
         self.canvas_height = 520
         self.canvas_width= 400
 
-        # self.notebook = Pivot(self.parent)
-        # self.notebook.pack(expand=True, fill='both', padx=16)
-
-        # self.notebook.add(self.tab_tools(), text="Tools", icon=u'\uec7a')
-        # self.notebook.add(self.tab_merge(), text="Merge PDFs", icon=u'\uea90')
-        # self.notebook.add(self.tab_convert(), text="Images to PDF", icon=u'\ue7aa')
-        # self.notebook.add(self.tab_settings(), '', icon=u'\ue713', to_end=True)
-        # self.notebook.select(0)
-
         self.notebook = ttk.Notebook(self.parent)
-        self.notebook.pack(expand=True, fill='both', padx=16)
+        self.notebook.pack(expand=True, fill='both', padx=8, pady=0)
 
         self.notebook.add(self.tab_tools(), text="Tools")
         self.notebook.add(self.tab_merge(), text="Merge")
         self.notebook.add(self.tab_convert(), text="Convert")
         self.notebook.add(self.tab_settings(), text="Settings")
 
-        ttk.Button(self.parent, text="Apply", command=self.app.apply, style = "Accent.TButton").pack(side="right", padx=22, pady=22, ipadx=30)
-        ttk.Button(self.parent, text="clear", command=self.app.clear).pack(side="right", padx=5, pady=22, ipadx=20)
+        ttk.Button(self.parent, text="Apply", command=self.app.apply).pack(side="right", padx=10, pady=22, ipadx=16, ipady=2)
+        ttk.Button(self.parent, text="clear", command=self.app.clear).pack(side="right", pady=22, ipadx=4, ipady=2)
 
         self.file_info = tk.Label(self.parent, text=f"No file selected \n", fg="gray", bg=self.parent['bg'], justify='left', anchor='nw', wraplength=600)
         self.file_info.pack(side="left", padx=20, pady=22, anchor='nw', fill='x', expand=True)
@@ -352,10 +336,10 @@ class View:
         self.images.pack(fill='x', expand=True, pady=12)
 
         self.preview_canvas = tk.Canvas(frame_right, width=self.canvas_width, height=self.canvas_height, bg="white", highlightthickness=1, highlightcolor='black')
+        self.preview_canvas.config(cursor="hand2")
         self.preview_canvas.bind('<Button-1>', self.add_pdf)
         self.preview_canvas.bind("<Enter>", lambda event: self.preview_canvas.config(bg="#F3F3F3"))
         self.preview_canvas.bind("<Leave>", lambda event: self.preview_canvas.config(bg="white"))
-
 
         self.preview_canvas.create_rectangle(30, 30, 370, 490, outline='gray', width=1,dash=(5, 5))
         self.preview_canvas.create_text(200, 250, text="click or drag file here",font=("Segoe UI", 12, 'italic'), fill="gray")
@@ -390,11 +374,11 @@ class View:
         self.treepdf.column("# 2",anchor='e', stretch='no', width=80)
         self.treepdf.heading("# 2", text="pages")
 
-        ttk.Button(_, text="Add file", command=self.add_pdf, style='Accent.TButton').pack(padx=10, anchor='nw', side='left', ipadx=15)
+        ttk.Button(_, text="Add file", command=self.add_pdf).pack(padx=10, anchor='nw', side='left', ipadx=15, ipady=1)
 
-        ttk.Button(_, text="Up", command=self.treepdf.move_up, style='Left.TButton').pack(anchor='nw', side='right', padx=(0,12))
-        ttk.Button(_, text="Down", command=self.treepdf.move_down, style='Middle.TButton').pack(anchor='nw', side='right', padx=6)
-        ttk.Button(_, text="remove", command=self.treepdf.remove_item, style='Right.TButton').pack(anchor='nw', side='right')
+        ttk.Button(_, text=u"\ue971", command=self.treepdf.move_up).pack(anchor='nw', side='right', padx=(0,12), ipady=1)
+        ttk.Button(_, text=u"\ue972", command=self.treepdf.move_down).pack(anchor='nw', side='right', padx=6, ipady=1)
+        ttk.Button(_, text=u"\ue74d", command=self.treepdf.remove_item).pack(anchor='nw', side='right', ipady=1)
 
         self.treepdf.pack(fill='both', expand=True, anchor='nw', padx=10, pady=10)
         
@@ -419,11 +403,10 @@ class View:
         self.treeimage.column("# 2", stretch='yes')
         self.treeimage.heading("# 2", text="path", anchor='w')
 
-        ttk.Button(_, text="Add file", command=self.add_img, style='Accent.TButton').pack(padx=10, anchor='nw', side='left', ipadx=15)
-        ttk.Button(_, text="Up", command=self.treeimage.move_up).pack(anchor='nw', side='right',  padx=(0,12))
-        ttk.Button(_, text="Down", command=self.treeimage.move_down).pack(  anchor='nw', side='right', padx=6)
-        ttk.Button(_, text="remove", command=self.treeimage.remove_item).pack(  anchor='nw', side='right')
-
+        ttk.Button(_, text="Add file", command=self.add_img, style='Accent.TButton').pack(padx=10, anchor='nw', side='left', ipadx=15, ipady=1)
+        ttk.Button(_, text=u"\ue971", command=self.treeimage.move_up).pack(anchor='nw', side='right',  padx=(0,12), ipady=1)
+        ttk.Button(_, text=u"\ue972", command=self.treeimage.move_down).pack(  anchor='nw', side='right', padx=6, ipady=1)
+        ttk.Button(_, text=u"\ue74d", command=self.treeimage.remove_item).pack(  anchor='nw', side='right', ipady=1)
 
         self.treeimage.pack(fill='both', expand=True, padx=10, pady=10)
 
@@ -444,14 +427,6 @@ class View:
         self.save_label = ttk.Label(save_group, text="", foreground="gray", wraplength=600)
         self.save_label.pack(fill='x', padx=(40, 0), expand=True)
 
-        theme_group = ttk.Frame(tab)
-        theme_group.pack(fill='x', padx=15, pady=10, anchor='nw')
-
-        ttk.Label(theme_group, text="theme", font=('Segoe UI', 10, 'bold' )).pack(fill='x', pady=12)
-
-        ttk.Radiobutton(theme_group, text="Light", variable=self.app.theme, value='light', command=self.set_light_theme).pack(fill='x', pady=3)
-        ttk.Radiobutton(theme_group, text="Dark", variable=self.app.theme, value='dark', command=self.set_dark_theme).pack(fill='x', pady=3)
-        ttk.Radiobutton(theme_group, text="System", variable=self.app.theme, value='auto', command=self.set_auto_theme).pack(fill='x', pady=3)
 
 
         _ = ttk.Frame(tab)
@@ -495,36 +470,6 @@ class View:
                 self.treeimage.insert("", 'end', values=(Path(path).name, path))
 
 
-    def set_light_theme(self):
-        self.app.theme.set('light')
-        sv_ttk.use_light_theme()
-        self.parent.config(bg='#EBF0F5')
-        pywinstyles.change_header_color(window=self.parent, color='#EBF0F5')
-        pywinstyles.change_title_color(window=self.parent, color='#EBF0F5')
-        self.file_info.config(background='#EBF0F5')
-        self.preview_canvas.config(bg='white')
-        self.preview_canvas.bind("<Enter>", lambda event: self.preview_canvas.config(bg="#F3F3F3"))
-        self.preview_canvas.bind("<Leave>", lambda event: self.preview_canvas.config(bg="white"))
-
-
-    def set_dark_theme(self):
-        self.app.theme.set('dark')
-        sv_ttk.use_dark_theme()
-        self.parent.config(bg='#141414')
-        pywinstyles.change_header_color(window=self.parent, color='#141414')
-        pywinstyles.change_title_color(window=self.parent, color='#141414')
-        self.file_info.config(background='#141414')
-        self.preview_canvas.config(bg='#1c1c1c')
-        self.preview_canvas.bind("<Enter>", lambda event: self.preview_canvas.config(bg="#212121"))
-        self.preview_canvas.bind("<Leave>", lambda event: self.preview_canvas.config(bg="#1c1c1c"))
-
-
-    def set_auto_theme(self):
-        if darkdetect.isDark(): self.set_dark_theme()
-        else: self.set_light_theme()
-        self.app.theme.set('auto')
-
-
     def custom_location(self):
         save_location = filedialog.askdirectory()
         if not save_location: return
@@ -541,17 +486,14 @@ class View:
 
 
 if __name__ == '__main__':
-    # multiprocessing.freeze_support() # for multiprecessing in windows	
 
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('youssefhoummad.pdftools.4.0') # show icon in taskbar
-    ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
     window = tk.Tk()
-    window.geometry("700x700")
-
+    window.geometry("650x650")
+    window.resizable(False, False)
     window.iconbitmap(r'img/icon.ico')
     window.title('pdftools')
-    # styling_tkinter(window)
+    styling_tkinter(window)
 
     app = App(window, View)    
     app.mainloop()

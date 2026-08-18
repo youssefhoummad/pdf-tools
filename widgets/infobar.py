@@ -3,7 +3,7 @@ import tkinter as tk
 
 
 class InfoBar(tk.Frame):
-    def __init__(self, parent, title, text, info_type="success", duration=3000):
+    def __init__(self, parent, title, text, info_type="success", duration=5000):
         """
         Create a styled InfoBar with horizontal sliding animation.
         :param parent: Parent widget to contain the InfoBar.

@@ -17,18 +17,18 @@ class apply_dnd():
         prototype = ctypes.WINFUNCTYPE(typ, typ, typ, typ, typ)
         WM_DROP_FILES = 0x233
         GWL_WND_PROC = -4
-        create_buffer = ctypes.c_buffer
-        func_DragQueryFile = (ctypes.windll.shell32.DragQueryFile)
+        create_buffer = ctypes.create_unicode_buffer
+        func_DragQueryFile = (ctypes.windll.shell32.DragQueryFileW)
 
         def py_drop_func(hwnd, msg, wp, lp):
             global files
             if msg == WM_DROP_FILES:
-                count = func_DragQueryFile(typ(wp), -1, None, None)
+                count = func_DragQueryFile(typ(wp), -1, None, 0)
                 file_buffer = create_buffer(char_limit)
                 files = []
                 for i in range(count):
-                    func_DragQueryFile(typ(wp), i, file_buffer, ctypes.sizeof(file_buffer))
-                    drop_name = file_buffer.value.decode("utf-8")
+                    func_DragQueryFile(typ(wp), i, file_buffer, char_limit)
+                    drop_name = file_buffer.value
                     files.append(drop_name)
                 func(files)
                 ctypes.windll.shell32.DragFinish(typ(wp))

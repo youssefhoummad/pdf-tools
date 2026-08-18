@@ -40,7 +40,7 @@ class Pivot(tk.Frame):
 
         self.tabs = {}
         self.bar = tk.Frame(self.topbar, height=3, bg=self.colors['accent'])
-        self.bar.place(x=0, y=47, width=0, height=3)  # Initially hidden
+        self.bar.place(x=0, y=42, width=0, height=3)  # Initially hidden
 
 
     def set_colors(self, colors):
@@ -90,7 +90,6 @@ class Pivot(tk.Frame):
         tab = self.tabs[tab_id]
 
         # Get the target position and width
-    
         target_x = tab.winfo_x()
         target_width = tab.winfo_width()
 
@@ -105,11 +104,11 @@ class Pivot(tk.Frame):
             dx = (target_x - current_x) / 5
             dw = (target_width - current_width) / 5
             if abs(dx) < 1 and abs(dw) < 1:
-                self.bar.place(x=target_x, y=47, width=target_width, height=3)
+                self.bar.place(x=target_x, y=42, width=target_width, height=3)
             else:
                 current_x += dx
                 current_width += dw
-                self.bar.place(x=int(current_x), y=47, width=int(current_width), height=3)
+                self.bar.place(x=int(current_x), y=42, width=int(current_width), height=3)
                 self.after(16, step)
 
         step()
@@ -155,7 +154,7 @@ class Tab(tk.Frame):
             left, right = right, left
 
         self.width = len(text) * 8 + 50
-        self.config(cursor='hand2', height=46, padx=16, width=self.width , bg=master['bg'])
+        self.config(cursor='hand2', height=46, padx=10, width=self.width , bg=master['bg'])
 
         self.command = command
         self.colors = colors
