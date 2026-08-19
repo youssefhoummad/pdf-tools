@@ -1,4 +1,6 @@
 import re
+import os
+import sys
 import tkinter as tk
 from tkinter import ttk, filedialog
 
@@ -12,7 +14,10 @@ import pypdfium2 as pdfium
 
 from funcs import *
 
-
+if getattr(sys, 'frozen', False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class GroupFrame(ttk.Frame):
@@ -117,7 +122,7 @@ class App:
 
 
     def get_settings(self):
-        settings = load_settings('settings.ini')
+        settings = load_settings(os.path.join(BASE_DIR, 'settings.ini'))
         if settings.get('Save', {}).get('option') == '2':
             self.save_option.set(2)
             self.view.save_label.configure(text=settings['Save']['location'])
@@ -143,7 +148,7 @@ class App:
 
         # Option 2: Load location from settings.ini
         elif save_option == 2:
-            save_location = Path(load_settings('settings.ini')['Save']['location'])
+            save_location = Path(load_settings(os.path.join(BASE_DIR, 'settings.ini'))['Save']['location'])
             if not is_file:
                 output_dir = save_location / 'images'
                 output_dir.mkdir(parents=True, exist_ok=True)
@@ -197,7 +202,7 @@ class App:
 
         if self.view.notebook.index("current") == 3: # settings tab
             settings = {'Save': {'option': self.save_option.get(), 'location': self.view.save_label.cget("text"), 'theme': self.theme.get()}}
-            save_settings('settings.ini', settings)
+            save_settings(os.path.join(BASE_DIR, 'settings.ini'), settings)
             InfoBar(self.parent, title="success", text="All settings saved :)").show()
             return
     
@@ -491,8 +496,7 @@ if __name__ == '__main__':
     window = tk.Tk()
     window.geometry("650x650")
     window.resizable(False, False)
-    window.iconbitmap(r'img/icon.ico')
-    window.title('pdftools')
+    window.iconbitmap(os.path.join(BASE_DIR, 'img', 'icon.ico'))    window.title('pdftools')
     styling_tkinter(window)
 
     app = App(window, View)    
