@@ -1,0 +1,71 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Try Nuitka build (standalone, not onefile)
+        id: nuitka
+        continue-on-error: true
+        run: |
+          pip install nuitka
+          python -m nuitka `
+            --standalone `
+            --enable-plugin=tk-inter `
+            --include-package-data=pypdfium2 `
+            --windows-console-mode=disable `
+            --windows-icon-from-ico=img\icon.ico `
+            --include-data-file=settings.ini=settings.ini `
+            --include-data-dir=img=img `
+            --output-dir=dist `
+            --output-filename=pdftools.exe `
+            main.pyw
+
+      - name: Check if Nuitka succeeded
+        id: check
+        shell: bash
+        run: |
+          if [ -f "dist/main.dist/pdftools.exe" ]; then
+            echo "built=nuitka" >> $GITHUB_OUTPUT
+          else
+            echo "built=none" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Fallback to PyInstaller (onedir, not onefile)
+        if: steps.check.outputs.built == 'none'
+        run: |
+          pip install pyinstaller
+          pyinstaller --noconfirm --windowed --name pdftools `
+            --icon img\icon.ico `
+            --add-data "settings.ini;." `
+            --add-data "img;img" `
+            --collect-all pypdfium2 `
+            main.pyw
+
+      - name: Upload Nuitka build
+        if: steps.check.outputs.built == 'nuitka'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdftools-nuitka-windows
+          path: dist/main.dist/
+
+      - name: Upload PyInstaller build
+        if: steps.check.outputs.built == 'none'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdftools-pyinstaller-windows
+          path: dist/pdftools/
