@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -18,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Try Nuitka build (standalone, not onefile)
+      - name: Try build with Nuitka (standalone, not onefile)
         id: nuitka
         continue-on-error: true
         run: |
@@ -29,43 +30,31 @@ jobs:
             --include-package-data=pypdfium2 `
             --windows-console-mode=disable `
             --windows-icon-from-ico=img\icon.ico `
-            --include-data-file=settings.ini=settings.ini `
             --include-data-dir=img=img `
             --output-dir=dist `
             --output-filename=pdftools.exe `
             main.pyw
 
-      - name: Check if Nuitka succeeded
-        id: check
-        shell: bash
-        run: |
-          if [ -f "dist/main.dist/pdftools.exe" ]; then
-            echo "built=nuitka" >> $GITHUB_OUTPUT
-          else
-            echo "built=none" >> $GITHUB_OUTPUT
-          fi
-
       - name: Fallback to PyInstaller (onedir, not onefile)
-        if: steps.check.outputs.built == 'none'
+        if: steps.nuitka.outcome != 'success'
         run: |
           pip install pyinstaller
           pyinstaller --noconfirm --windowed --name pdftools `
             --icon img\icon.ico `
-            --add-data "settings.ini;." `
             --add-data "img;img" `
             --collect-all pypdfium2 `
             main.pyw
 
-      - name: Upload Nuitka build
-        if: steps.check.outputs.built == 'nuitka'
+      - name: Upload build (Nuitka)
+        if: steps.nuitka.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: pdftools-nuitka-windows
+          name: pdftools-windows
           path: dist/main.dist/
 
-      - name: Upload PyInstaller build
-        if: steps.check.outputs.built == 'none'
+      - name: Upload build (PyInstaller)
+        if: steps.nuitka.outcome != 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: pdftools-pyinstaller-windows
+          name: pdftools-windows
           path: dist/pdftools/
