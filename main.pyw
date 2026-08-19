@@ -496,7 +496,8 @@ if __name__ == '__main__':
     window = tk.Tk()
     window.geometry("650x650")
     window.resizable(False, False)
-    window.iconbitmap(os.path.join(BASE_DIR, 'img', 'icon.ico'))    window.title('pdftools')
+    window.iconbitmap(os.path.join(BASE_DIR, 'img', 'icon.ico')) 
+    window.title('pdftools')
     styling_tkinter(window)
 
     app = App(window, View)    
