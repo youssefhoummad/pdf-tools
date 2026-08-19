@@ -28,6 +28,7 @@ jobs:
             --standalone `
             --enable-plugin=tk-inter `
             --include-package-data=pypdfium2 `
+            --assume-yes-for-downloads `
             --windows-console-mode=disable `
             --windows-icon-from-ico=img\icon.ico `
             --include-data-dir=img=img `
