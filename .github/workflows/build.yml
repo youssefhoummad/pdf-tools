@@ -6,6 +6,8 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write   # مطلوب لإنشاء Release ورفع ملفات إليه
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -86,3 +88,18 @@ jobs:
         with:
           name: pdftools-setup
           path: installer_output/pdftools-setup.exe
+
+      - name: Zip portable build
+        shell: pwsh
+        run: |
+          Compress-Archive -Path "${{ steps.outdir.outputs.dir }}\*" -DestinationPath "pdftools-portable.zip"
+
+      - name: Publish zip and installer to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v4.0.${{ github.run_number }}
+          name: v4.0.${{ github.run_number }}
+          generate_release_notes: true
+          files: |
+            pdftools-portable.zip
+            installer_output/pdftools-setup.exe
