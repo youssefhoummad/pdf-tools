@@ -1,24 +1,18 @@
 name: Build Windows EXE
-
 on:
   push:
     branches: [ 4.0 ]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
       - name: Install dependencies
         run: pip install -r requirements.txt
-
       - name: Try build with Nuitka (standalone, not onefile)
         id: nuitka
         continue-on-error: true
@@ -35,7 +29,6 @@ jobs:
             --output-dir=dist `
             --output-filename=pdftools.exe `
             main.pyw
-
       - name: Fallback to PyInstaller (onedir, not onefile)
         if: steps.nuitka.outcome != 'success'
         run: |
@@ -45,17 +38,39 @@ jobs:
             --add-data "img;img" `
             --collect-all pypdfium2 `
             main.pyw
-
       - name: Upload build (Nuitka)
         if: steps.nuitka.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
           name: pdftools-windows
           path: dist/main.dist/
-
       - name: Upload build (PyInstaller)
         if: steps.nuitka.outcome != 'success'
         uses: actions/upload-artifact@v4
         with:
           name: pdftools-windows
           path: dist/pdftools/
+
+      - name: Determine build output directory
+        id: outdir
+        shell: pwsh
+        run: |
+          if (Test-Path "dist/main.dist/pdftools.exe") {
+            "dir=dist/main.dist" >> $env:GITHUB_OUTPUT
+          } else {
+            "dir=dist/pdftools" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Install Inno Setup
+        run: choco install innosetup -y --no-progress
+
+      - name: Compile installer (setup.exe)
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion=4.0.${{ github.run_number }} /DMySourceDir="${{ steps.outdir.outputs.dir }}" installer.iss
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdftools-setup
+          path: installer_output/pdftools-setup.exe
