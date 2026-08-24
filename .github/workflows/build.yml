@@ -64,6 +64,18 @@ jobs:
       - name: Install Inno Setup
         run: choco install innosetup -y --no-progress
 
+      - name: Verify installer.iss exists (تشخيص)
+        shell: pwsh
+        run: |
+          Write-Host "Current directory: $(Get-Location)"
+          if (Test-Path "installer.iss") {
+            Write-Host "installer.iss FOUND"
+          } else {
+            Write-Host "installer.iss NOT FOUND at repo root — this is why ISCC fails"
+            Get-ChildItem -Force
+            exit 1
+          }
+
       - name: Compile installer (setup.exe)
         shell: pwsh
         run: |
