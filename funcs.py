@@ -1,12 +1,11 @@
 import configparser
 from pathlib import Path
-import sys
+import re
 from tkinter import ttk
+import tkinter.font as tkfont
+from typing import Optional
 
-
-sys.path.append('./libs') # pip install --target=./libs -r requirements.txt
-
-from PIL import Image
+from PIL import Image, ImageTk
 
 
 
@@ -16,6 +15,7 @@ def save_settings(file_path, settings):
         config[section] = values
     with open(file_path, 'w') as configfile:
         config.write(configfile)
+
 
 
 def load_settings(file_path):
@@ -28,40 +28,64 @@ def load_settings(file_path):
 
 
 
-
-def styling_tkinter(window):
+def styling_tkinter(window, rtl=False):
     background =  '#F9F9F9'# "#EFF4F9" #'#EFF4F9'
 
-    for widget in ["Ttk", "Tk", "TLabelFrame", "TRadiobutton", "TEntry", "TButton", "TLabel", "TScale"]:
-        window.option_add(f'*{widget}*background', background)
-        window.option_add(f'*{widget}*foreground', 'black')
-        window.option_add(f'*{widget}*font', 'Segoe-UI 9')
-        # window.option_add(f'*{widget}*padding', [0,3])
-        # window.option_add(f'*{widget}*direction', 'rtl')  # تعيين الاتجاه لجميع عناصر ttk
-        # window.option_add(f'*{widget}*justify', 'right')  # تعيين الاتجاه لجميع عناصر ttk
-        # window.option_add(f'*{widget}*anchor', 'e')  # تعيين الاتجاه لجميع عناصر ttk
-    window.option_add('TRadiobutton*background', 'white')  # تعيين الاتجاه لجميع عناصر ttk
-
+    default_font = tkfont.nametofont("TkDefaultFont")
+    default_font.configure(family="Segoe UI", size=9)
     style = ttk.Style()
-    window.config(background="#F0F0F0")
+
+
+    for widget in ["Ttk", "Tk", "TFrame", "TLabelFrame", "TRadiobutton", "TEntry", "TButton", "TLabel", "TScale", "TCombobox"]:
+        style.configure(widget,  background=background)
+ 
+
     style.configure('TEntry', padding=4)
-    style.configure('TCombobox', padding=4)
-    style.configure('TButton', padding=2)
-    style.configure('TFrame', background=background)
-    style.configure('TRadiobutton', background=background)
-    style.configure('TLabel', background=background)
-    style.configure('Desc.TLabel', background=background, foreground="gray", font='italic')
-    style.configure('TScale', background=background)
-    style.configure('TLabelframe', padding=6, background=background)
-    style.configure('Content.TLabelframe', padding=6, background=background)
-    style.configure('TLabelframe.Label', font=('Segoe UI', 10, 'bold'), background=background)
+    style.configure('TCombobox', padding=5)
+    style.configure('TButton', padding=3)
+
     style.configure('TNotebook.Tab', padding=(15, 2), font=('Segoe UI', 9))
     style.map("TNotebook.Tab", background=[("selected", 'red')], foreground=[("selected", "#0078d7"), ("!selected", "gray")])
 
-    # style.configure('Content.TLabel', font=('Segoe UI', 9))
-    # style.configure('Content.TButton', font=('Segoe UI', 9))
-    # style.configure('Content.TEntry', font=('Segoe UI', 9))
+    style.configure('Content.TLabel', font=('Segoe UI', 9))
     style.map("TNotebook.Tab", foreground=[("!selected", "gray")])
+
+
+    if rtl:
+        # window_dwm.toggle_rtl_layout(window, enabled=True)
+
+        window.option_add('*Ttk*direction', 'rtl')
+        window.option_add('*TLabel*justify', 'right')
+        window.option_add('*TLabel*anchor', 'e')
+        window.option_add('*TEntry*justify', 'right')
+
+        style.configure('TNotebook.Tab', tabposition='ne') # option to change position of tab
+        style.configure('TNotebook',height=40, width=80, tabposition='ne')
+        
+        for widget in ["Ttk", "Tk", "TLabelFrame", "TRadiobutton", "TEntry", "TButton", "TLabel", "TScale"]:
+            window.option_add(f'*{widget}*direction', "rtl")  # تعيين الاتجاه لجميع عناصر ttk
+            window.option_add(f'*{widget}*justify', 'right')  # تعيين الاتجاه لجميع عناصر ttk
+            window.option_add(f'*{widget}*anchor', 'e')  # تعيين الاتجاه لجميع عناصر ttk
+
+    
+        style.layout('TRadiobutton',
+            [('Radiobutton.padding', {'sticky': 'nswe', 'children': [
+                ('Radiobutton.indicator', {'side': 'right', 'sticky': ''}),
+                ('Radiobutton.focus', {'side': 'right', 'sticky': '', 'children': [
+                    ('Radiobutton.label', {'sticky': ''})
+                ]})
+            ]})]
+        )
+
+        style.layout('TCombobox', [
+        ('Combobox.field', {'sticky': 'nswe', 'children': [
+            ('Combobox.downarrow', {'side': 'left', 'sticky': 'ns'}),
+            ('Combobox.padding', {'expand': '1', 'sticky': 'nswe', 'children': [
+                ('Combobox.textarea', {'sticky': 'nswe'})
+                ]})
+            ]})
+        ])
+
 
 
 def set_output_file(pdf_path:str ,refain:str):
@@ -76,10 +100,12 @@ def set_output_file(pdf_path:str ,refain:str):
     return output_path.with_suffix('.pdf') # prefix = output_path / stem
 
 
+
 def set_output_dir(pdf_path:str)-> str:
     path = Path(pdf_path).parent.joinpath('images')
     path.mkdir(parents=True, exist_ok=True)
     return path
+
 
 
 def parse_range(astr:str)-> list[int]:
@@ -92,9 +118,6 @@ def parse_range(astr:str)-> list[int]:
         x=part.split('-')
         result.update(range(int(x[0])-1,int(x[-1])))
     return sorted(result)
-
-
-
 
 
 
@@ -139,3 +162,18 @@ def images_pdfs(images_path:list, output_path:str):
 
 
 
+def extract_page_number(text: Optional[str], default: int = 1) -> int:
+    """استخراج آخر رقم من النص، وإرجاع default إذا لم يُعثر على أرقام."""
+    if not text:
+        return default
+    digits = re.findall(r'\d+', text)
+    return int(digits[-1]) if digits else default
+
+
+
+def render_page_to_tkimage(page_obj, target_width: int = 400):
+    """تحويل صفحة PDF إلى كائن PhotoImage الخاص بـ Tkinter."""
+    scale = target_width / page_obj.get_width()
+    bitmap = page_obj.render(scale=scale, rotation=0)
+    pil_image = bitmap.to_pil()
+    return ImageTk.PhotoImage(pil_image)
