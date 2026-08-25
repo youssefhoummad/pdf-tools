@@ -76,16 +76,23 @@ jobs:
       - name: Determine build output directory
         id: outdir
         shell: pwsh
+        env:
+          WS: ${{ github.workspace }}
         run: |
-          if (Test-Path "${{ github.workspace }}\dist\main.dist\pdftools.exe") {
-            "dir=github.workspace\dist\main.dist">>{{ github.workspace }}\dist\main.dist" >>github.workspace\dist\main.dist">>env:GITHUB_OUTPUT
-          } elseif (Test-Path "${{ github.workspace }}\dist\pdftools\pdftools.exe") {
-            "dir=github.workspace\dist\pdftools">>{{ github.workspace }}\dist\pdftools" >>github.workspace\dist\pdftools">>env:GITHUB_OUTPUT
-          } else {
-            Write-Host "❌ Build output not found"
-            Get-ChildItem -Recurse dist | Select-Object FullName
-            exit 1
+          $candidates = @(
+            "$env:WS\dist\main.dist",
+            "$env:WS\dist\pdftools"
+          )
+          foreach (dind indincandidates) {
+            if (Test-Path "$d\pdftools.exe") {
+              Add-Content -Path env:GITHUBOUTPUT−Value"dir=env:GITHUB_OUTPUT -Value "dir=env:GITHUBO​UTPUT−Value"dir=d"
+              Write-Host "Found build at: $d"
+              exit 0
+            }
           }
+          Write-Host "Build output not found"
+          Get-ChildItem -Recurse "$env:WS\dist" | Select-Object FullName
+          exit 1
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -95,35 +102,42 @@ jobs:
 
       - name: Smoke test the build
         shell: pwsh
+        env:
+          BUILD_DIR: ${{ steps.outdir.outputs.dir }}
         run: |
-          Start-Process "${{ steps.outdir.outputs.dir }}\pdftools.exe"
+          Start-Process "$env:BUILD_DIR\pdftools.exe"
           Start-Sleep -Seconds 8
           if (-not (Get-Process pdftools -ErrorAction SilentlyContinue)) {
-            Write-Host "❌ App crashed on launch"; exit 1
+            Write-Host "App crashed on launch"; exit 1
           }
           Stop-Process -Name pdftools -Force
-          Write-Host "✅ App launches fine"
+          Write-Host "App launches fine"
 
       - name: Install Inno Setup
         run: choco install innosetup -y --no-progress
 
       - name: Verify installer.iss exists
         shell: pwsh
+        env:
+          WS: ${{ github.workspace }}
         run: |
-          if (-not (Test-Path "${{ github.workspace }}\installer.iss")) {
-            Write-Host "❌ installer.iss NOT FOUND at repo root"
+          if (-not (Test-Path "$env:WS\installer.iss")) {
+            Write-Host "installer.iss NOT FOUND at repo root"
             Get-ChildItem -Force
             exit 1
           }
-          Write-Host "✅ installer.iss FOUND"
+          Write-Host "installer.iss FOUND"
 
       - name: Compile installer (setup.exe)
         shell: pwsh
+        env:
+          BUILD_DIR: ${{ steps.outdir.outputs.dir }}
+          ISS_PATH: ${{ github.workspace }}\installer.iss
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
             /DMyAppVersion=4.0.${{ github.run_number }} `
-            /DMySourceDir="${{ steps.outdir.outputs.dir }}" `
-            "${{ github.workspace }}\installer.iss"
+            "/DMySourceDir=$env:BUILD_DIR" `
+            "$env:ISS_PATH"
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
@@ -133,9 +147,11 @@ jobs:
 
       - name: Zip portable build
         shell: pwsh
+        env:
+          BUILD_DIR: ${{ steps.outdir.outputs.dir }}
         run: |
-          Compress-Archive -Path "${{ steps.outdir.outputs.dir }}\*" `
-            -DestinationPath "pdftools-portable.zip"
+          Compress-Archive -Path "$env:BUILD_DIR\*" `
+            -DestinationPath "pdftools-portable.zip" -Force
 
       - name: Publish zip and installer to GitHub Releases
         uses: softprops/action-gh-release@v2
