@@ -24,6 +24,30 @@ jobs:
             --standalone `
             --enable-plugin=tk-inter `
             --include-package-data=pypdfium2 `
+            --nofollow-import-to=PIL.EpsImagePlugin `
+            --nofollow-import-to=PIL.FpxImagePlugin `
+            --nofollow-import-to=PIL.GbrImagePlugin `
+            --nofollow-import-to=PIL.IcnsImagePlugin `
+            --nofollow-import-to=PIL.ImtImagePlugin `
+            --nofollow-import-to=PIL.McIdasImagePlugin `
+            --nofollow-import-to=PIL.MicImagePlugin `
+            --nofollow-import-to=PIL.MspImagePlugin `
+            --nofollow-import-to=PIL.PalmImagePlugin `
+            --nofollow-import-to=PIL.PcdImagePlugin `
+            --nofollow-import-to=PIL.PcxImagePlugin `
+            --nofollow-import-to=PIL.PixarImagePlugin `
+            --nofollow-import-to=PIL.PsdImagePlugin `
+            --nofollow-import-to=PIL.SgiImagePlugin `
+            --nofollow-import-to=PIL.SpiderImagePlugin `
+            --nofollow-import-to=PIL.SunImagePlugin `
+            --nofollow-import-to=PIL.TgaImagePlugin `
+            --nofollow-import-to=PIL.WebPImagePlugin `
+            --nofollow-import-to=PIL.WmfImagePlugin `
+            --nofollow-import-to=PIL.XbmImagePlugin `
+            --nofollow-import-to=PIL.XpmImagePlugin `
+            --nofollow-import-to=PIL.ImageQt `
+            --python-flag=no_docstrings 
+            --python-flag=no_site `
             --assume-yes-for-downloads `
             --windows-console-mode=disable `
             --windows-icon-from-ico=img\icon.ico `
