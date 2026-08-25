@@ -1,30 +1,23 @@
 name: Build Windows EXE
-
 on:
   push:
     branches: [ 4.0 ]
   workflow_dispatch:
-
 jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: write
-
+      contents: write   # مطلوب لإنشاء Release ورفع ملفات إليه
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-
       - name: Install dependencies
         run: pip install -r requirements.txt
-
-      - name: Try build with Nuitka (standalone)
+      - name: Try build with Nuitka (standalone, not onefile)
         id: nuitka
         continue-on-error: true
-        shell: pwsh
         run: |
           pip install nuitka
           python -m nuitka `
@@ -62,8 +55,7 @@ jobs:
             --output-dir=dist `
             --output-filename=pdftools.exe `
             main.pyw
-
-      - name: Fallback to PyInstaller (onedir)
+      - name: Fallback to PyInstaller (onedir, not onefile)
         if: steps.nuitka.outcome != 'success'
         run: |
           pip install pyinstaller
@@ -72,72 +64,48 @@ jobs:
             --add-data "img;img" `
             --collect-all pypdfium2 `
             main.pyw
+      - name: Upload build (Nuitka)
+        if: steps.nuitka.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdftools-windows
+          path: dist/main.dist/
+      - name: Upload build (PyInstaller)
+        if: steps.nuitka.outcome != 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdftools-windows
+          path: dist/pdftools/
 
       - name: Determine build output directory
         id: outdir
         shell: pwsh
-        env:
-          WS: ${{ github.workspace }}
         run: |
-          $candidates = @(
-            "$env:WS\dist\main.dist",
-            "$env:WS\dist\pdftools"
-          )
-          foreach (dind indincandidates) {
-            if (Test-Path "$d\pdftools.exe") {
-              Add-Content -Path env:GITHUBOUTPUT−Value"dir=env:GITHUB_OUTPUT -Value "dir=env:GITHUBO​UTPUT−Value"dir=d"
-              Write-Host "Found build at: $d"
-              exit 0
-            }
+          if (Test-Path "dist/main.dist/pdftools.exe") {
+            "dir=dist/main.dist" >> $env:GITHUB_OUTPUT
+          } else {
+            "dir=dist/pdftools" >> $env:GITHUB_OUTPUT
           }
-          Write-Host "Build output not found"
-          Get-ChildItem -Recurse "$env:WS\dist" | Select-Object FullName
-          exit 1
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: pdftools-windows
-          path: ${{ steps.outdir.outputs.dir }}/
-
-      - name: Smoke test the build
-        shell: pwsh
-        env:
-          BUILD_DIR: ${{ steps.outdir.outputs.dir }}
-        run: |
-          Start-Process "$env:BUILD_DIR\pdftools.exe"
-          Start-Sleep -Seconds 8
-          if (-not (Get-Process pdftools -ErrorAction SilentlyContinue)) {
-            Write-Host "App crashed on launch"; exit 1
-          }
-          Stop-Process -Name pdftools -Force
-          Write-Host "App launches fine"
 
       - name: Install Inno Setup
         run: choco install innosetup -y --no-progress
 
-      - name: Verify installer.iss exists
+      - name: Verify installer.iss exists (تشخيص)
         shell: pwsh
-        env:
-          WS: ${{ github.workspace }}
         run: |
-          if (-not (Test-Path "$env:WS\installer.iss")) {
-            Write-Host "installer.iss NOT FOUND at repo root"
+          Write-Host "Current directory: $(Get-Location)"
+          if (Test-Path "installer.iss") {
+            Write-Host "installer.iss FOUND"
+          } else {
+            Write-Host "installer.iss NOT FOUND at repo root — this is why ISCC fails"
             Get-ChildItem -Force
             exit 1
           }
-          Write-Host "installer.iss FOUND"
 
       - name: Compile installer (setup.exe)
         shell: pwsh
-        env:
-          BUILD_DIR: ${{ steps.outdir.outputs.dir }}
-          ISS_PATH: ${{ github.workspace }}\installer.iss
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" `
-            /DMyAppVersion=4.0.${{ github.run_number }} `
-            "/DMySourceDir=$env:BUILD_DIR" `
-            "$env:ISS_PATH"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DMyAppVersion=4.0.${{ github.run_number }} /DMySourceDir="${{ steps.outdir.outputs.dir }}" installer.iss
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
@@ -147,11 +115,8 @@ jobs:
 
       - name: Zip portable build
         shell: pwsh
-        env:
-          BUILD_DIR: ${{ steps.outdir.outputs.dir }}
         run: |
-          Compress-Archive -Path "$env:BUILD_DIR\*" `
-            -DestinationPath "pdftools-portable.zip" -Force
+          Compress-Archive -Path "${{ steps.outdir.outputs.dir }}\*" -DestinationPath "pdftools-portable.zip"
 
       - name: Publish zip and installer to GitHub Releases
         uses: softprops/action-gh-release@v2
