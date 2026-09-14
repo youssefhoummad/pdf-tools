@@ -1,153 +1,22 @@
 import re
+from pathlib import Path
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox, PhotoImage
-
-from widgets import Combobox, Treeview, Entry, apply_dnd ,InfoBar
-
-# sys.path.append('./libs') # pip install --target=./libs -r requirements.txt
+from tkinter import ttk, filedialog, messagebox
 
 from PIL import ImageTk
-
 import pypdfium2 as pdfium
 
+from src.widgets import Combobox, Treeview, Entry, apply_dnd ,InfoBar, Scale
 from funcs import *
+from src.i18n import *
 
 
+SETTINGS_PATH = Path(__file__).resolve().parent / "src" / "settings.ini"
+settings = load_settings(SETTINGS_PATH)
 
-STRINGS = {
-    'en': {
-        'app_title': 'pdftools',
-        'tab_tools': 'Tools',
-        'tab_merge': 'Merge',
-        'tab_convert': 'Convert',
-        'tab_settings': 'Settings',
-        'group_split': 'Split',
-        'group_delete': 'Delete',
-        'group_rotate': 'Rotate',
-        'group_images': 'Images',
-        'placeholder_range': 'Example: 1, 2, 6-12',
-        'placeholder_direction': 'Choose direction...',
-        'zoom_label': 'Zoom',
-        'btn_apply': 'Apply',
-        'btn_clear': 'clear',
-        'btn_add_file': 'Add file',
-        'no_file_selected': 'No file selected \n',
-        'drop_hint': 'click or drag file here',
-        'merge_desc': ("PDF Merger: A user-friendly tool that allows you to easily combine "
-                        "multiple PDF files into a single document. \n"
-                        "Drag and drop your PDF files, rearrange them as needed."),
-        'convert_desc': ("Image to PDF Converter: A user-friendly tool that allows you to easily "
-                          "convert and combine multiple images \n"
-                          "into a single, high-quality PDF file with drag-and-drop functionality."),
-        'col_path': 'path',
-        'col_pages': 'pages',
-        'col_filename': 'filename',
-        'save_location': 'Save Location',
-        'save_same_location': 'in same location of origin file',
-        'save_custom_location': 'in this location: ',
-        'settings_language': 'Language',
-        'lang_ar': 'Arabic',
-        'lang_en': 'English',
-        'restart_note': 'Restart the app for the language change to take effect.',
-        'pages_count': 'Pages: ',
-        'warning_title': 'Warning',
-        'page_less_than': 'page must be less than ',
-        'success_title': 'success',
-        'settings_saved': 'All settings saved :)',
-        'pdf_saved_in': 'The new PDF saved in:\n\n',
-        'files_merged_in': 'All files merged in:\n\n',
-        'copyright': 'Copyright © Youssef Hoummad, All rights reserved',
-        'select_pdf_title': 'Select PDF File',
-        'select_image_title': 'Select Image File',
-    },
-    'ar': {
-        'app_title': 'أدوات PDF',
-        'tab_tools': 'أدوات',
-        'tab_merge': 'دمج',
-        'tab_convert': 'تحويل',
-        'tab_settings': 'إعدادات',
-        'group_split': 'تقسيم',
-        'group_delete': 'حذف',
-        'group_rotate': 'تدوير',
-        'group_images': 'صور',
-        'placeholder_range': 'مثال: 1, 2, 6-12',
-        'placeholder_direction': '...اختر الاتجاه',
-        'zoom_label': 'تكبير ',
-        'btn_apply': 'تطبيق',
-        'btn_clear': 'مسح',
-        'btn_add_file': 'إضافة ملف',
-        'no_file_selected': 'لم يتم اختيار ملف \n',
-        'drop_hint': 'اضغط أو اسحب الملف هنا',
-        'merge_desc': ("دمج PDF: أداة سهلة الاستخدام تتيح لك دمج عدة ملفات PDF في مستند واحد بسهولة.\n"
-                        "اسحب وأفلت ملفاتك، ورتّبها كما تشاء."),
-        'convert_desc': ("تحويل الصور إلى PDF: أداة سهلة الاستخدام تتيح لك تحويل ودمج عدة صور\n"
-                          "في ملف PDF واحد عالي الجودة بالسحب والإفلات."),
-        'col_path': 'المسار',
-        'col_pages': 'الصفحات',
-        'col_filename': 'اسم الملف',
-        'save_location': 'مكان الحفظ',
-        'save_same_location': 'في نفس مكان الملف الأصلي ',
-        'save_custom_location': ': في هذا المكان ',
-        'settings_language': 'اللغة',
-        'lang_auto': 'تلقائي (حسب النظام)',
-        'lang_ar': 'العربية ',
-        'lang_en': 'الإنجليزية ',
-        'restart_note': 'أعد تشغيل البرنامج لتطبيق تغيير اللغة.',
-        'pages_count': 'الصفحات: ',
-        'warning_title': 'تحذير',
-        'page_less_than': 'رقم الصفحات يجب أن يكون أقل من ',
-        'success_title': 'نجاح',
-        'settings_saved': 'حُفظ مكان التخزين',
-        'pdf_saved_in': ':حًفظ الملف الجديد في \n\n',
-        'files_merged_in': ':دُمجت الملفات في\n\n',
-        'copyright': 'Copyright © Youssef Hoummad, All rights reserved',
-
-    },
-}
- 
- 
- 
-def t(key):
-    """يرجع النص المترجم للمفتاح المعطى حسب اللغة الحالية المحمَّلة."""
-    return STRINGS.get(CURRENT_LANG, STRINGS['en']).get(key, key)
- 
-
-CURRENT_LANG = 'en'
-rtl = False
-
-LEFT, RIGHT, W, E, NW, NE = 'left', 'right', 'w', 'e', 'nw', 'ne'
-PADX = (20,10)
-
-SAVE_LOCATION = ''
-
-
-def change_lang(lang):
-    global LEFT, RIGHT, W, E, NW, NE, PADX, rtl, CURRENT_LANG
-
-    CURRENT_LANG = 'en'
-    rtl = False
-
-    LEFT, RIGHT, W, E, NW, NE = 'left', 'right', 'w', 'e', 'nw', 'ne'
-    PADX = (20,10)
-
-    if lang == 'ar':
-        LEFT, RIGHT, W, E, NW, NE = RIGHT, LEFT, E, W, NE, NW
-        PADX = PADX[1], PADX[0]
-        rtl = True
-        CURRENT_LANG = 'ar'
-
-
-
-
-
-def get_settings():
-    global SAVE_LOCATION
-
-    settings = load_settings('settings.ini')
-    SAVE_LOCATION = settings.get('SAVE', {}).get('custom_div')
-
-    CURRENT_LANG = settings.get('LANG', {}).get('current_lang')
-    change_lang(CURRENT_LANG)
+# settings imported from funcs
+SAVE_LOCATION = settings.get('SAVE', {}).get('custom_div', '')
+CURRENT_LANG = settings.get('LANG', {}).get('current_lang', 'en')
 
 
 
@@ -172,19 +41,17 @@ class GroupFrame(ttk.Frame):
         self.entry.bind("<KeyRelease>", self._cmd_on_change, add="+") # Add a <KeyRelease> event binding without overriding existing bindings
         self._debounce_id = None
 
-        zoom_container = ttk.Frame(self)
-        self.label_zoom = ttk.Label(zoom_container, text=t('zoom_label'), justify=LEFT)
-        self.scale_zoom = ttk.Scale(zoom_container, from_=1, to=8, orient='horizontal', command=self._sync_zoom) 
-
-        self.rotate_combobox = Combobox(self, placeholder=t('placeholder_direction'), values=[90, 180, 270] )
-  
 
         if zoom:
+            zoom_container = ttk.Frame(self)
+            self.label_zoom = ttk.Label(zoom_container, text=t('zoom_label') + ' 1', justify=LEFT)
+            self.scale_zoom = Scale(zoom_container, from_=1, to=8, rtl=RTL, orient='horizontal', command=self._sync_zoom) 
             self.label_zoom.pack(side=LEFT, anchor=NE)
             self.scale_zoom.pack(fill='x', expand=True, side=LEFT)
             zoom_container.pack(fill='x', expand=True, pady=(12,6))
 
         if degree:
+            self.rotate_combobox = Combobox(self, placeholder=t('placeholder_direction'), values=[90, 180, 270] )
             self.rotate_combobox.pack(fill='x', expand=True, pady=(12,6), ipadx=1)
     
 
@@ -197,7 +64,7 @@ class GroupFrame(ttk.Frame):
         
 
     def _sync_zoom(self, *_):
-        self.label_zoom.config(text=f'{t('zoom_label')} {int(self.scale_zoom.get())}:')
+        self.label_zoom.config(text=f'{t('zoom_label')} {int(self.scale_zoom.get())}')
 
 
 
@@ -316,7 +183,7 @@ class App:
         digits = re.findall(r'\d+', astr) if astr else []
         page = int(digits[-1]) if digits else 1
         if page > len(self.PDF):
-            InfoBar(self.parent, title=t("warning_title"), info_type='warning', text=f"{t('page_less_than')} {len(self.PDF)}", rtl=rtl).show()
+            InfoBar(self.parent, title=t("warning_title"), info_type='warning', text=f"{t('page_less_than')} {len(self.PDF)}", rtl=RTL).show()
         page = max(1, min(page, len(self.PDF)))
 
         if page == getattr(self, '_last_preview_page', None):
@@ -324,6 +191,7 @@ class App:
 
         if page in self._preview_cache:
             tk_image = self._preview_cache[page]
+            
         else:
             page_obj = self.PDF[page-1]
             target_width = 380
@@ -334,9 +202,6 @@ class App:
             tk_image = ImageTk.PhotoImage(image)
       
             self._preview_cache[page] = tk_image
-
-
-
 
 
         self.view.preview_canvas.delete('picture')
@@ -352,6 +217,7 @@ class App:
 
         if current_tab_name == t('tab_settings'):
             global SAVE_LOCATION
+
             if not self.save_location.get():
                 SAVE_LOCATION = ''
             else:
@@ -360,7 +226,7 @@ class App:
 
 
             settings = {'SAVE': {'custom_div': SAVE_LOCATION}, 'LANG': {'current_lang': self.current_lang.get()}}
-            save_settings('settings.ini', settings)
+            save_settings(SETTINGS_PATH, settings)
 
             if CURRENT_LANG != self.current_lang.get():
                 messagebox.showinfo(
@@ -370,7 +236,7 @@ class App:
                 self.parent.quit()
 
 
-            InfoBar(self.parent, title=t('success_title'), text=f"{t('settings_saved')}", rtl=rtl).show()
+            InfoBar(self.parent, title=t('success_title'), text=f"{t('settings_saved')}", rtl=RTL).show()
 
             return
     
@@ -383,12 +249,13 @@ class App:
             output_path = output_path.with_suffix('.pdf')
             images_pdfs(paths_imgs, output_path) # convert func
 
-            InfoBar(self.parent, title=t('success_title'), text=f"{t('pdf_saved_in')} {output_path}", rtl=rtl).show()
+            InfoBar(self.parent, title=t('success_title'), text=f"{t('pdf_saved_in')} {output_path}", rtl=RTL).show()
 
             return
         
         
-        if not self.PDF: return
+        if not self.PDF: return # No file selected
+
 
         writer = pdfium.PdfDocument.new()
         paths = [self.view.treepdf.item(item)['values'][0] for item in self.view.treepdf.get_children()]
@@ -403,7 +270,7 @@ class App:
 
             if self.view.images.enable:
                 output_dir = self.get_output_path(paths[-1], is_file=False)
-                pdf_images(self.PDF, self.view.images.astr, self.view.images.zoom, output_dir)
+                pdf_images(self.PDF, self.view.images.astr,int(self.view.images.zoom), output_dir)
 
 
             if self.view.rotate.enable:
@@ -424,13 +291,13 @@ class App:
 
             if splited: 
                 writer.save(output_path)
-                InfoBar(self.parent, title=t('success_title'), text=f"{t('pdf_saved_in')} {output_path}", rtl=rtl).show()
+                InfoBar(self.parent, title=t('success_title'), text=f"{t('pdf_saved_in')} {output_path}", rtl=RTL).show()
                 return
             
             if rotated:
                 self.PDF.save(output_path)
                 if not splited:
-                    InfoBar(self.parent, title=t('success_title'), text=f"{t('pdf_saved_in')} {output_path}", rtl=rtl).show()
+                    InfoBar(self.parent, title=t('success_title'), text=f"{t('pdf_saved_in')} {output_path}", rtl=RTL).show()
                 return
             
 
@@ -445,7 +312,7 @@ class App:
                     writer.import_pages(src_pdf)
             writer.save(output_path)
 
-            InfoBar(self.parent, title=t('success_title'), text=f"{t('files_merged_in')} {output_path}", rtl=rtl).show()
+            InfoBar(self.parent, title=t('success_title'), text=f"{t('files_merged_in')} {output_path}", rtl=RTL).show()
             return
 
 
@@ -483,17 +350,14 @@ class View:
         self.file_info.pack(side=LEFT, padx=20, pady=22, fill='x', expand=True)
 
 
-        if rtl:
-            current_tabs = self.notebook.tabs() # Returns a list of widget names            
-            for index, tab_id in enumerate(reversed(current_tabs)):
-                self.notebook.insert(index, tab_id)
+        # reorder_tabs(self.notebook)
 
 
     def tab_tools(self):
-        tab_tools = ttk.Frame(self.parent)
-        frame_left = ttk.Frame(tab_tools)
-        frame_right = ttk.Frame(tab_tools)
-        frame_bottom = ttk.Frame(tab_tools)
+        self.tab_tools = ttk.Frame(self.parent)
+        frame_left = ttk.Frame(self.tab_tools)
+        frame_right = ttk.Frame(self.tab_tools)
+        frame_bottom = ttk.Frame(self.tab_tools)
 
         self.split = GroupFrame(frame_left, title=t('group_split'), on_entry_change=self.app.show_preview)
         self.split.pack(fill='x', expand=True, pady=12)
@@ -518,25 +382,20 @@ class View:
         apply_dnd(self.preview_canvas, self.on_drop_pdf)
 
 
-        col_start = 1 if rtl else 0
-        col_end = 0 if rtl else 1
-        padx = (10, 0) if rtl else (0, 10)
-
-
-        frame_left.grid(row=0, column=col_start, sticky=NW+E, padx=padx)
-        tab_tools.grid_columnconfigure(col_start, weight=1)
-        frame_right.grid(row=0, column=col_end, sticky=W)
+        frame_left.grid(row=0, column=1, sticky=NW+E, padx=PADX)
+        self.tab_tools.grid_columnconfigure(1, weight=1)
+        frame_right.grid(row=0, column=2, sticky=W)
         frame_bottom.grid(row=1, column=0, columnspan=2, sticky=E)
 
         self.preview_canvas.pack(fill='both')
 
-        return tab_tools
+        return self.tab_tools
 
 
     def tab_merge(self):
         tab = ttk.Frame(self.parent)
 
-        ttk.Label(tab, foreground ='gray' , text=t('merge_desc'), justify=LEFT).pack(fill='x', pady=20)
+        ttk.Label(tab, foreground ='gray' , text=t('merge_desc'), justify=LEFT, anchor=W).pack(fill='x', pady=20)
 
         _ = ttk.Frame(tab)
         _.pack(fill='x', pady=(0,6))
@@ -550,7 +409,7 @@ class View:
 
 
         self.treepdf.column("# 1", stretch='yes')
-        self.treepdf.heading("# 1", text=t("col_path"), anchor=W)
+        self.treepdf.heading("# 1", text=t("col_path"))
 
         self.treepdf.column("# 2",anchor='e', stretch='no', width=80)
         self.treepdf.heading("# 2", text=t('col_pages'))
@@ -568,7 +427,7 @@ class View:
 
     def tab_convert(self):
         tab = ttk.Frame(self.parent)
-        ttk.Label(tab, foreground ='gray', text=t('convert_desc'), justify=LEFT, anchor=W).pack(fill='x', pady=20, anchor=W)
+        ttk.Label(tab, foreground ='gray', text=t('convert_desc'), justify=LEFT, anchor=W).pack(fill='x', pady=20)
 
         _ = ttk.Frame(tab)
         _.pack(fill='x', pady=(0,6))
@@ -664,16 +523,33 @@ class View:
 
 
 
+def rtl_view(window):
+    reverse_notebook(window.notebook)
+    reverse_treeview(window)
+    flip_grid_horizontally(window.tab_tools)
+
+
+
+
 if __name__ == '__main__':
-    get_settings()
 
     window = tk.Tk()
     window.geometry("650x650")
     window.resizable(False, False)
-    window.iconbitmap(r'img/icon.ico')
+    window.iconbitmap(r'src/icon.ico')
     window.title(t('app_title'))
+    styling_tkinter(window)
 
-    styling_tkinter(window, rtl=rtl)
 
-    app = App(window, View)    
+    if RTL: 
+        style_rtl(window)
+
+    app = App(window, View)
+
+    if RTL:
+        rtl_view(app.view)
+        # reverse_notebook(app.view.notebook)
+        # reverse_treeview(app.view)
+        # flip_grid_horizontally(app.view.tab_tools)
+
     app.mainloop()
